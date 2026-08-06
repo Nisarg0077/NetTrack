@@ -83,14 +83,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: const Text('Automatically launch the app when you log in'),
               value: _runAtStartup,
               onChanged: (bool value) async {
-                if (value) {
-                  await launchAtStartup.enable();
-                } else {
-                  await launchAtStartup.disable();
+                try {
+                  if (value) {
+                    await launchAtStartup.enable();
+                  } else {
+                    await launchAtStartup.disable();
+                  }
+                  setState(() {
+                    _runAtStartup = value;
+                  });
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Could not change startup settings: $e')),
+                  );
                 }
-                setState(() {
-                  _runAtStartup = value;
-                });
               },
             ),
           SwitchListTile(

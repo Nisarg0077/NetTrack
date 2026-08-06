@@ -16,17 +16,22 @@ void main() async {
   
   if (Platform.isWindows) {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    bool isMsix = Platform.resolvedExecutable.contains('WindowsApps');
     launchAtStartup.setup(
       appName: packageInfo.appName,
       appPath: Platform.resolvedExecutable,
-      packageName: 'Nisarg0077.NetTrack',
+      packageName: isMsix ? 'Nisarg0077.NetTrack' : null,
     );
     
     // Set to true by default on first launch
     final prefs = await SharedPreferences.getInstance();
     bool hasSetStartup = prefs.getBool('has_set_startup') ?? false;
     if (!hasSetStartup) {
-      await launchAtStartup.enable();
+      try {
+        await launchAtStartup.enable();
+      } catch (e) {
+        debugPrint('Failed to set startup task: $e');
+      }
       await prefs.setBool('has_set_startup', true);
     }
   }
