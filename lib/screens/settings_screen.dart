@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:launch_at_startup/launch_at_startup.dart';
 import '../providers/theme_provider.dart';
 import '../providers/data_provider.dart';
 import '../services/settings_service.dart';
@@ -20,12 +22,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final SettingsService _settingsService = SettingsService();
   int _refreshInterval = 60;
   bool _isBackgroundServiceRunning = false;
+  bool _runAtStartup = false;
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
     _checkBackgroundService();
+    _checkStartupState();
+  }
+
+  Future<void> _checkStartupState() async {
+    if (Platform.isWindows) {
+      bool isEnabled = await launchAtStartup.isEnabled();
+      setState(() {
+        _runAtStartup = isEnabled;
+      });
+    }
   }
 
   Future<void> _checkBackgroundService() async {
@@ -64,6 +77,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               themeProvider.toggleTheme();
             },
           ),
+          if (Platform.isWindows)
+            SwitchListTile(
+              title: const Text('Run at Startup'),
+              subtitle: const Text('Automatically launch the app when you log in'),
+              value: _runAtStartup,
+              onChanged: (bool value) async {
+                if (value) {
+                  await launchAtStartup.enable();
+                } else {
+                  await launchAtStartup.disable();
+                }
+                setState(() {
+                  _runAtStartup = value;
+                });
+              },
+            ),
           SwitchListTile(
             title: const Text('Background Tracking'),
             subtitle: const Text('Track usage in real-time in background'),

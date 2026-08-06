@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:launch_at_startup/launch_at_startup.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/app_shell.dart';
@@ -9,6 +13,24 @@ import 'services/system_tray_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  if (Platform.isWindows) {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    launchAtStartup.setup(
+      appName: packageInfo.appName,
+      appPath: Platform.resolvedExecutable,
+      packageName: 'Nisarg0077.NetTrack',
+    );
+    
+    // Set to true by default on first launch
+    final prefs = await SharedPreferences.getInstance();
+    bool hasSetStartup = prefs.getBool('has_set_startup') ?? false;
+    if (!hasSetStartup) {
+      await launchAtStartup.enable();
+      await prefs.setBool('has_set_startup', true);
+    }
+  }
+
   await SystemTrayService().init();
   await initializeBackgroundService();
   runApp(
