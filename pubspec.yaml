@@ -119,3 +119,11 @@ flutter_launcher_icons:
     generate: true
     icon_path: "assets/icon.png"
   image_path: "assets/icon.png"
+
+msix_config:
+  display_name: NetTrack
+  publisher_display_name: Nisarg0077
+  identity_name: Nisarg0077.NetTrack
+  msix_version: 1.0.0.1
+  logo_path: assets/icon.png
+  store: false

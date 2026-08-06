@@ -1,18 +1,21 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import '../providers/data_provider.dart';
 import '../widgets/update_dialog.dart';
 
 class UpdateService {
-  // TODO: Replace with your actual GitHub username and repository name
-  static const String _githubOwner = 'YOUR_USERNAME';
-  static const String _githubRepo = 'YOUR_REPO';
+  // The GitHub repository details for checking releases
+  static const String _githubOwner = 'Nisarg0077';
+  static const String _githubRepo = 'NetTrack';
   static const String _apiUrl = 'https://api.github.com/repos/$_githubOwner/$_githubRepo/releases/latest';
 
   static Future<void> checkForUpdates(BuildContext context, {bool showNoUpdateMessage = false}) async {
     if (_githubOwner == 'YOUR_USERNAME') {
-      if (showNoUpdateMessage) {
+      if (showNoUpdateMessage && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please configure your GitHub repo in UpdateService first.')),
         );
@@ -27,8 +30,7 @@ class UpdateService {
         final data = json.decode(response.body);
         final String latestVersionTag = data['tag_name'];
         final String releaseNotes = data['body'] ?? 'No release notes provided.';
-        final String releaseUrl = data['html_url'];
-
+        
         // Extract version number from tag (e.g., 'v1.0.1' -> '1.0.1')
         final latestVersion = latestVersionTag.replaceAll('v', '').replaceAll('V', '');
 
@@ -36,19 +38,49 @@ class UpdateService {
         final currentVersion = packageInfo.version;
 
         if (_isNewerVersion(currentVersion, latestVersion)) {
-          if (context.mounted) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => UpdateDialog(
-                latestVersion: latestVersion,
-                releaseNotes: releaseNotes,
-                releaseUrl: releaseUrl,
-              ),
-            );
+          // Check for platform-specific asset
+          final List assets = data['assets'] ?? [];
+          final requiredExtension = Platform.isWindows ? '.msix' : '.apk';
+          String? directDownloadUrl;
+          
+          for (var asset in assets) {
+            final name = (asset['name'] as String).toLowerCase();
+            if (name.endsWith(requiredExtension)) {
+              directDownloadUrl = asset['browser_download_url'];
+              break;
+            }
           }
-        } else if (showNoUpdateMessage) {
-          if (context.mounted) {
+          
+          if (directDownloadUrl != null) {
+            // Update available for this platform!
+            if (context.mounted) {
+              Provider.of<DataProvider>(context, listen: false).setUpdateAvailable(
+                true,
+                version: latestVersion,
+                notes: releaseNotes,
+                url: directDownloadUrl,
+              );
+              
+              if (showNoUpdateMessage) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => UpdateDialog(
+                    latestVersion: latestVersion,
+                    releaseNotes: releaseNotes,
+                    releaseUrl: directDownloadUrl!,
+                  ),
+                );
+              }
+            }
+            return;
+          }
+        } 
+        
+        // If we reach here, either version is not newer, or no platform asset found
+        if (context.mounted) {
+          Provider.of<DataProvider>(context, listen: false).setUpdateAvailable(false);
+          if (showNoUpdateMessage) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('App is up to date.')),
             );

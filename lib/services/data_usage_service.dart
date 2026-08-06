@@ -11,6 +11,10 @@ import '../models/network_stats_model.dart';
 class DataUsageService {
   Map<String, installed.AppInfo>? _cachedAppMap;
   Map<String, Uint8List?> _cachedIcons = {};
+  
+  static final Map<String, double> _hourlyCacheMb = {};
+  static final Map<String, double> _dailyCacheMb = {};
+  
   static const MethodChannel _windowsNetworkChannel = MethodChannel('com.example.dataUsageTracker/windows_network');
 
   /// Check if usage permissions are granted (Android only)
@@ -128,6 +132,16 @@ class DataUsageService {
   /// Lightweight method to get total data usage for a specific period (Android)
   Future<double> getDailyTotalUsageMb(DateTime startDate, DateTime endDate) async {
     if (!Platform.isAndroid) return await _getWindowsDailyTotalUsageMb(startDate, endDate);
+    
+    // Check cache for full past days
+    bool isFullDay = startDate.hour == 0 && startDate.minute == 0 && endDate.hour == 23 && endDate.minute == 59;
+    bool isPast = endDate.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+    String cacheKey = '${startDate.year}_${startDate.month}_${startDate.day}';
+    
+    if (isFullDay && isPast && _dailyCacheMb.containsKey(cacheKey)) {
+      return _dailyCacheMb[cacheKey]!;
+    }
+
     try {
       List<NetworkInfo> stats = await UsageStats.queryNetworkUsageStats(
         startDate,
@@ -140,6 +154,11 @@ class DataUsageService {
         final tx = stat.txTotalBytesValue ?? 0;
         totalMb += (rx + tx) / (1024 * 1024);
       }
+      
+      if (isFullDay && isPast) {
+        _dailyCacheMb[cacheKey] = totalMb;
+      }
+      
       return totalMb;
     } catch (e) {
       return 0;
@@ -467,13 +486,29 @@ class DataUsageService {
       for (int i = 0; i < 24; i++) {
         DateTime start = DateTime(day.year, day.month, day.day, i, 0, 0);
         DateTime end = DateTime(day.year, day.month, day.day, i, 59, 59);
+        
+        if (start.isAfter(DateTime.now())) {
+          hourlyMb[i] = 0.0;
+          continue;
+        }
+
+        String cacheKey = '${day.year}_${day.month}_${day.day}_$i';
+        bool isPastHour = end.isBefore(DateTime.now().subtract(const Duration(minutes: 5))); // Add 5 min buffer
+
+        if (isPastHour && _hourlyCacheMb.containsKey(cacheKey)) {
+          hourlyMb[i] = _hourlyCacheMb[cacheKey]!;
+          continue;
+        }
+
         if (end.isAfter(DateTime.now())) {
           end = DateTime.now();
         }
-        if (start.isAfter(end)) {
-          hourlyMb[i] = 0.0;
-        } else {
-          hourlyMb[i] = await getDailyTotalUsageMb(start, end);
+
+        double val = await getDailyTotalUsageMb(start, end);
+        hourlyMb[i] = val;
+        
+        if (isPastHour) {
+          _hourlyCacheMb[cacheKey] = val;
         }
       }
     } catch (e) {

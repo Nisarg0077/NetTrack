@@ -5,6 +5,7 @@ import '../providers/data_provider.dart';
 import '../services/settings_service.dart';
 import '../services/update_service.dart';
 import '../widgets/export_dialog.dart';
+import '../widgets/update_dialog.dart';
 import 'export_history_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
@@ -130,10 +131,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
           ListTile(
             title: const Text('Check for Updates'),
-            subtitle: const Text('See if a newer version is available'),
-            trailing: const Icon(Icons.system_update),
+            subtitle: Text(
+              dataProvider.isUpdateAvailable 
+                  ? 'New Update Available! (${dataProvider.updateLatestVersion})'
+                  : 'See if a newer version is available',
+              style: TextStyle(
+                color: dataProvider.isUpdateAvailable ? Colors.blueAccent : null,
+                fontWeight: dataProvider.isUpdateAvailable ? FontWeight.bold : null,
+              ),
+            ),
+            trailing: Icon(
+              Icons.system_update,
+              color: dataProvider.isUpdateAvailable ? Colors.blueAccent : null,
+            ),
             onTap: () {
-              UpdateService.checkForUpdates(context, showNoUpdateMessage: true);
+              if (dataProvider.isUpdateAvailable && dataProvider.updateReleaseUrl != null) {
+                // If we already know an update is available, just show the dialog immediately
+                showDialog(
+                  context: context,
+                  builder: (context) => UpdateDialog(
+                    latestVersion: dataProvider.updateLatestVersion ?? '',
+                    releaseNotes: dataProvider.updateReleaseNotes ?? '',
+                    releaseUrl: dataProvider.updateReleaseUrl ?? '',
+                  ),
+                );
+              } else {
+                UpdateService.checkForUpdates(context, showNoUpdateMessage: true);
+              }
             },
           ),
         ],

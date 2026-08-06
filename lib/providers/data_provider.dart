@@ -48,7 +48,20 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   int _activeAppsCount = 0;
   int get activeAppsCount => _activeAppsCount;
 
+  bool _isUpdateAvailable = false;
+  bool get isUpdateAvailable => _isUpdateAvailable;
+
+  String? _updateLatestVersion;
+  String? get updateLatestVersion => _updateLatestVersion;
+
+  String? _updateReleaseNotes;
+  String? get updateReleaseNotes => _updateReleaseNotes;
+
+  String? _updateReleaseUrl;
+  String? get updateReleaseUrl => _updateReleaseUrl;
+
   Timer? _refreshTimer;
+  int _currentFetchId = 0;
 
   DataProvider() {
     _init();
@@ -127,7 +140,21 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     fetchData();
   }
 
+  void setErrorMessage(String? msg) {
+    _errorMessage = msg;
+    notifyListeners();
+  }
+
+  void setUpdateAvailable(bool available, {String? version, String? notes, String? url}) {
+    _isUpdateAvailable = available;
+    _updateLatestVersion = version;
+    _updateReleaseNotes = notes;
+    _updateReleaseUrl = url;
+    notifyListeners();
+  }
+
   Future<void> fetchData() async {
+    final int fetchId = ++_currentFetchId;
     _isLoading = true;
     notifyListeners();
 
@@ -177,7 +204,10 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
 
     try {
       final newAppUsages = await _dataUsageService.getAppNetworkUsage(startDate, endDate);
+      if (fetchId != _currentFetchId) return; // Stale fetch
+
       final newNetworkStats = await _dataUsageService.getGeneralNetworkStats(startDate: startDate, endDate: endDate);
+      if (fetchId != _currentFetchId) return; // Stale fetch
       
       if (newAppUsages.isNotEmpty || newNetworkStats.isNotEmpty) {
           _appUsages = newAppUsages;
@@ -216,6 +246,8 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
       // Background loading for heavy stats
       DateTime targetDay = _selectedDate ?? startDate;
       final hourlyMb = await _dataUsageService.getHourlyUsageForDay(targetDay);
+      if (fetchId != _currentFetchId) return; // Stale fetch
+      
       _peakHour = _dataUsageService.getPeakHourIndex(hourlyMb);
 
       // Fetch weekly trend sequentially to avoid saturating Android IPC Binder
@@ -224,14 +256,17 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
         DateTime dayStart = DateTime(endDate.year, endDate.month, endDate.day - i);
         DateTime dayEnd = dayStart.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
         trend.add(await _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd));
+        if (fetchId != _currentFetchId) return; // Stale fetch during loop
       }
       _weeklyTrend = trend;
     } catch (e) {
       _errorMessage = "Failed to load usage data.";
     }
     
-    _isLoading = false;
-    notifyListeners();
+    if (fetchId == _currentFetchId) {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> _startAutoRefresh() async {

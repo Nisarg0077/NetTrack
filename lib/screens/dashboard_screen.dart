@@ -4,6 +4,7 @@ import '../providers/data_provider.dart';
 import '../widgets/daily_summary_card.dart';
 import '../widgets/date_selector_bar.dart';
 import '../widgets/export_dialog.dart';
+import '../widgets/update_dialog.dart';
 import '../widgets/usage_chart.dart';
 import '../widgets/app_usage_tile.dart';
 import 'dart:io';
@@ -96,6 +97,43 @@ class DashboardScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const DateSelectorBar(),
+                          if (dataProvider.isUpdateAvailable)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: Material(
+                                color: Colors.blueAccent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => UpdateDialog(
+                                        latestVersion: dataProvider.updateLatestVersion ?? '',
+                                        releaseNotes: dataProvider.updateReleaseNotes ?? '',
+                                        releaseUrl: dataProvider.updateReleaseUrl ?? '',
+                                      ),
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.system_update, color: Colors.blueAccent),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            'Update ${dataProvider.updateLatestVersion} is available! Tap to download.',
+                                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                                          ),
+                                        ),
+                                        const Icon(Icons.chevron_right, color: Colors.blueAccent),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 16),
                           if (isDesktop)
                             Row(
