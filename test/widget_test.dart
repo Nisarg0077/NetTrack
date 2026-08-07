@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:NetTrack/main.dart';
-import 'package:NetTrack/providers/data_provider.dart';
-import 'package:NetTrack/providers/theme_provider.dart';
+import 'package:net_track/main.dart';
+import 'package:net_track/providers/data_provider.dart';
+import 'package:net_track/providers/theme_provider.dart';
 
 void main() {
   testWidgets('NetTrackApp smoke test', (WidgetTester tester) async {

@@ -9,5 +9,6 @@ void main() {
   
   final icoBytes = img.encodeIco(image);
   File('test_icon.ico').writeAsBytesSync(icoBytes);
+  // ignore: avoid_print
   print('Done');
 }

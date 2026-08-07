@@ -14,10 +14,24 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
-    afterEvaluate {
-        val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
-        android?.compileSdkVersion(36)
+
+    if (project.name == "file_picker") {
+        apply(plugin = "org.jetbrains.kotlin.android")
     }
+
+    afterEvaluate {
+        val androidExt = project.extensions.findByName("android")
+        if (androidExt != null) {
+            try {
+                androidExt.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType).invoke(androidExt, 37)
+            } catch(e: Exception) {
+                try {
+                    androidExt.javaClass.getMethod("setCompileSdk", java.lang.Integer::class.java).invoke(androidExt, 37)
+                } catch(e2: Exception) {}
+            }
+        }
+    }
+
 }
 subprojects {
     project.evaluationDependsOn(":app")

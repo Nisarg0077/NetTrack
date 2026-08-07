@@ -384,9 +384,11 @@ class _ExportDialogState extends State<ExportDialog> {
                           title: Text(_getOptionTitle(option)),
                           subtitle: _buildOptionSubtitle(option),
                           value: option,
+                          // ignore: deprecated_member_use
                           groupValue: _selectedOption,
                           activeColor: theme.colorScheme.primary,
                           contentPadding: EdgeInsets.zero,
+                          // ignore: deprecated_member_use
                           onChanged: (val) {
                             if (val != null) {
                               setState(() {

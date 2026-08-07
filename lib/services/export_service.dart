@@ -79,7 +79,7 @@ class ExportService {
 
       String? savePath;
       if (saveToCustomLocation) {
-        savePath = await FilePicker.platform.saveFile(
+        savePath = await FilePicker.saveFile(
           dialogTitle: 'Save NetTrack Report',
           fileName: fileName,
           type: FileType.custom,

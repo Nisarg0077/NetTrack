@@ -10,7 +10,7 @@ import '../models/network_stats_model.dart';
 
 class DataUsageService {
   Map<String, installed.AppInfo>? _cachedAppMap;
-  Map<String, Uint8List?> _cachedIcons = {};
+  final Map<String, Uint8List?> _cachedIcons = {};
   
   static final Map<String, double> _hourlyCacheMb = {};
   static final Map<String, double> _dailyCacheMb = {};

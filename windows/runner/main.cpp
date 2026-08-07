@@ -7,6 +7,13 @@
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  HANDLE hMutex = CreateMutex(NULL, TRUE, L"dataUsageTracker_Mutex_Unique_Name");
+  if (GetLastError() == ERROR_ALREADY_EXISTS) {
+    MessageBox(NULL, L"The application is already running.", L"NetTrack", MB_ICONINFORMATION | MB_OK);
+    CloseHandle(hMutex);
+    return EXIT_SUCCESS;
+  }
+
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
@@ -39,5 +46,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
 
   ::CoUninitialize();
+  
+  if (hMutex) {
+    ReleaseMutex(hMutex);
+    CloseHandle(hMutex);
+  }
   return EXIT_SUCCESS;
 }

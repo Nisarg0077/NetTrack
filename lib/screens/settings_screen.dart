@@ -89,10 +89,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   } else {
                     await launchAtStartup.disable();
                   }
+                  if (!context.mounted) return;
                   setState(() {
                     _runAtStartup = value;
                   });
                 } catch (e) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Could not change startup settings: $e')),
                   );
