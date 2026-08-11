@@ -434,6 +434,27 @@ class DataUsageService {
                rx = prefs.getInt('win_total_rx_$dayKey') ?? 0;
                tx = prefs.getInt('win_total_tx_$dayKey') ?? 0;
            }
+        } else if (Platform.isAndroid) {
+          try {
+            final file = File('/proc/net/dev');
+            if (await file.exists()) {
+              final lines = await file.readAsLines();
+              for (var line in lines) {
+                if (line.contains(interface.name)) {
+                  final parts = line.split(':');
+                  if (parts.length > 1) {
+                    final data = parts[1].trim().split(RegExp(r'\s+'));
+                    if (data.length >= 9) {
+                      rx = int.tryParse(data[0]) ?? 0;
+                      tx = int.tryParse(data[8]) ?? 0;
+                    }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            debugPrint("Error reading /proc/net/dev: $e");
+          }
         }
 
         stats.add(
@@ -529,6 +550,57 @@ class DataUsageService {
       }
     }
     return maxVal > 0.001 ? peakIndex : -1;
+  }
+
+  /// Get 7-day historical trend for a specific app (MB)
+  Future<List<double>> getApp7DayTrend(String packageName) async {
+    List<double> trend = List.filled(7, 0.0);
+    DateTime today = DateTime.now();
+
+    if (Platform.isAndroid) {
+      List<Future<double>> futures = [];
+      for (int i = 0; i < 7; i++) {
+        DateTime start = DateTime(today.year, today.month, today.day - (6 - i));
+        DateTime end = DateTime(today.year, today.month, today.day - (6 - i), 23, 59, 59);
+        if (end.isAfter(today)) end = today;
+
+        futures.add(() async {
+          try {
+            List<NetworkInfo> stats = await UsageStats.queryNetworkUsageStats(
+              start,
+              end,
+              networkType: NetworkType.all,
+            );
+            double totalMb = 0;
+            for (var stat in stats) {
+              if (stat.packageName == packageName) {
+                final rx = stat.rxTotalBytesValue ?? 0;
+                final tx = stat.txTotalBytesValue ?? 0;
+                totalMb += (rx + tx) / (1024 * 1024);
+              }
+            }
+            return totalMb;
+          } catch (e) {
+            return 0.0;
+          }
+        }());
+      }
+      trend = await Future.wait(futures);
+    } else if (Platform.isWindows) {
+      final prefs = await SharedPreferences.getInstance();
+      for (int i = 0; i < 7; i++) {
+        DateTime date = DateTime(today.year, today.month, today.day - (6 - i));
+        final dayKey = '${date.year}_${date.month}_${date.day}';
+        
+        String rxKey = 'win_app_rx_${packageName}_$dayKey';
+        String txKey = 'win_app_tx_${packageName}_$dayKey';
+        
+        int rx = prefs.getInt(rxKey) ?? 0;
+        int tx = prefs.getInt(txKey) ?? 0;
+        trend[i] = (rx + tx) / (1024 * 1024);
+      }
+    }
+    return trend;
   }
 }
 

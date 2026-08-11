@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/app_usage_model.dart';
 import '../utils/format_utils.dart';
+import 'frosted_glass_card.dart';
+import '../screens/app_detail_screen.dart';
 
 class AppUsageTile extends StatelessWidget {
   final AppUsageModel appUsage;
@@ -22,24 +25,26 @@ class AppUsageTile extends StatelessWidget {
     final appTotal = appUsage.rxBytes + appUsage.txBytes;
     final percentage = totalDeviceBytes == 0 ? 0.0 : (appTotal / totalDeviceBytes).clamp(0.0, 1.0);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: isDark ? [] : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-        border: isDark ? Border.all(color: Colors.white.withValues(alpha: 0.05)) : null,
-      ),
-      child: Row(
-        children: [
-          Container(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppDetailScreen(appUsage: appUsage),
+            ),
+          );
+        },
+        child: FrostedGlassCard(
+          padding: const EdgeInsets.all(16),
+          borderRadius: 20,
+          blur: 0,
+          child: Row(
+            children: [
+              Hero(
+                tag: 'app_icon_${appUsage.packageName}',
+                child: Container(
             width: 50,
             height: 50,
             decoration: BoxDecoration(
@@ -61,6 +66,7 @@ class AppUsageTile extends StatelessWidget {
                     ? const Icon(Icons.window, color: Colors.blue) 
                     : const Icon(Icons.android, color: Colors.green)),
           ),
+              ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -72,14 +78,14 @@ class AppUsageTile extends StatelessWidget {
                     Expanded(
                       child: Text(
                         appUsage.appName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       FormatUtils.formatBytes(appTotal),
-                      style: TextStyle(
+                      style: GoogleFonts.jetBrainsMono(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
                       ),
@@ -109,11 +115,11 @@ class AppUsageTile extends StatelessWidget {
                   children: [
                     Text(
                       '↓ ${FormatUtils.formatBytes(appUsage.rxBytes)}',
-                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54),
+                      style: GoogleFonts.jetBrainsMono(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54),
                     ),
                     Text(
                       '↑ ${FormatUtils.formatBytes(appUsage.txBytes)}',
-                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54),
+                      style: GoogleFonts.jetBrainsMono(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54),
                     ),
                   ],
                 ),
@@ -121,6 +127,8 @@ class AppUsageTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }

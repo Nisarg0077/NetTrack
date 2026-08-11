@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/format_utils.dart';
+import 'frosted_glass_card.dart';
 
 class TotalUsageCard extends StatelessWidget {
   final int totalBytes;
@@ -17,34 +18,11 @@ class TotalUsageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          colors: isDark 
-              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-              : [theme.colorScheme.primary.withValues(alpha: 0.1), Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: isDark ? [] : [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          )
-        ],
-        border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
-          width: 1,
-        )
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
+    return FrostedGlassCard(
+      padding: const EdgeInsets.all(28.0),
+      child: Column(
+        children: [
             Text('Total Network Usage', style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
               letterSpacing: 1.1,
@@ -97,7 +75,6 @@ class TotalUsageCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 

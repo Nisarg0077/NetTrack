@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/export_history_item.dart';
 import '../services/export_service.dart';
 import '../services/settings_service.dart';
+import 'dart:ui';
 
 class ExportHistoryScreen extends StatefulWidget {
   const ExportHistoryScreen({super.key});
@@ -47,8 +48,17 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Export History'),
+        title: const Text('Export History', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
         actions: [
           if (_history.isNotEmpty)
             IconButton(
@@ -108,7 +118,7 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                   ),
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
                   itemCount: _history.length,
                   separatorBuilder: (ctx, idx) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {

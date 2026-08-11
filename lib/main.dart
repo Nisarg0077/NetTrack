@@ -77,6 +77,7 @@ class NetTrackApp extends StatelessWidget {
             listTileTheme: const ListTileThemeData(
               tileColor: Colors.transparent,
             ),
+
             textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme),
           ),
           darkTheme: ThemeData(
@@ -97,6 +98,7 @@ class NetTrackApp extends StatelessWidget {
               shadowColor: Colors.black.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
             ),
+
             textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).apply(
               bodyColor: Colors.white,
               displayColor: Colors.white,

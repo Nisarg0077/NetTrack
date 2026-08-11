@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/format_utils.dart';
+import 'animated_counter.dart';
 
 class DailySummaryCard extends StatelessWidget {
   final int totalBytes;
@@ -131,19 +132,14 @@ class DailySummaryCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: totalBytes.toDouble()),
+                    AnimatedCounter(
+                      value: totalBytes.toDouble(),
                       duration: const Duration(milliseconds: 600),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, value, child) {
-                        return Text(
-                          FormatUtils.formatBytes(value.toInt()),
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 26,
-                          ),
-                        );
-                      },
+                      formatBuilder: (value) => FormatUtils.formatBytes(value.toInt()),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 26,
+                      ),
                     ),
                   ],
                 ),
@@ -197,16 +193,11 @@ class DailySummaryCard extends StatelessWidget {
           child: Icon(icon, color: color, size: 24),
         ),
         const SizedBox(height: 10),
-        TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0, end: bytes.toDouble()),
+        AnimatedCounter(
+          value: bytes.toDouble(),
           duration: const Duration(milliseconds: 600),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, child) {
-            return Text(
-              FormatUtils.formatBytes(value.toInt()),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            );
-          },
+          formatBuilder: (value) => FormatUtils.formatBytes(value.toInt()),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const SizedBox(height: 4),
         Text(

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'data_usage_service.dart';
+import 'settings_service.dart';
 
 const notificationChannelId = 'nettrack_foreground';
 const notificationId = 888;
@@ -42,6 +43,7 @@ Future<void> initializeBackgroundService() async {
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   final dataService = DataUsageService();
+  final settingsService = SettingsService();
 
   // Bring to foreground
   if (service is AndroidServiceInstance) {
@@ -52,8 +54,10 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  // Update notification periodically (60 seconds is the minimum safe interval for NetworkStatsManager)
-  Timer.periodic(const Duration(seconds: 60), (timer) async {
+  Timer? bgTimer;
+  int currentInterval = -1;
+
+  Future<void> performBackgroundWork() async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
         try {
@@ -87,5 +91,28 @@ void onStart(ServiceInstance service) async {
         }
       }
     }
-  });
+  }
+
+  void scheduleTimer() async {
+    int interval = await settingsService.getRefreshInterval();
+    if (interval < 60) interval = 60; // 60s minimum
+
+    currentInterval = interval;
+    bgTimer = Timer.periodic(Duration(seconds: currentInterval), (timer) async {
+      await performBackgroundWork();
+
+      // Check if interval changed
+      int newInterval = await settingsService.getRefreshInterval();
+      if (newInterval < 60) newInterval = 60;
+      
+      if (newInterval != currentInterval) {
+        bgTimer?.cancel();
+        scheduleTimer();
+      }
+    });
+  }
+
+  // Initial work and start timer
+  await performBackgroundWork();
+  scheduleTimer();
 }

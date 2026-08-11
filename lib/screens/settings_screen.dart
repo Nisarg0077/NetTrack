@@ -6,10 +6,10 @@ import '../providers/theme_provider.dart';
 import '../providers/data_provider.dart';
 import '../services/settings_service.dart';
 import '../services/update_service.dart';
-import '../widgets/export_dialog.dart';
 import '../widgets/update_dialog.dart';
 import 'export_history_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'dart:ui';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -62,12 +62,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final dataProvider = Provider.of<DataProvider>(context);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
       ),
       body: Material(
         color: Colors.transparent,
         child: ListView(
+          padding: const EdgeInsets.only(top: 100, bottom: 100),
           children: [
             SwitchListTile(
             title: const Text('Dark Theme'),
@@ -137,20 +147,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.timer),
             onTap: () {
               _showRefreshIntervalDialog(context);
-            },
-          ),
-          const Divider(),
-          ListTile(
-            title: const Text('Export Usage Reports'),
-            subtitle: const Text('Export custom usage reports to Excel (.xlsx) or CSV'),
-            trailing: const Icon(Icons.download_rounded),
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const ExportDialog(),
-              );
             },
           ),
           const Divider(),
