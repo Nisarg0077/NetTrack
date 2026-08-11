@@ -325,9 +325,12 @@ class ExportService {
 
   Future<void> shareFile(String filePath) async {
     try {
-      await Share.shareXFiles(
-        [XFile(filePath)],
-        text: 'NetTrack Usage Report',
+      // The new share_plus API
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(filePath)],
+          text: 'NetTrack Usage Report',
+        ),
       );
     } catch (e) {
       debugPrint("Error sharing file: $e");

@@ -3,41 +3,31 @@ import 'package:provider/provider.dart';
 import '../providers/data_provider.dart';
 import '../widgets/daily_summary_card.dart';
 import '../widgets/date_selector_bar.dart';
-import '../widgets/export_dialog.dart';
 import '../widgets/update_dialog.dart';
 import '../widgets/usage_chart.dart';
 import '../widgets/app_usage_tile.dart';
+import '../widgets/daily_summary_card.dart';
 import 'dart:io';
+import 'dart:ui';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  String _formatSpeed(double bytesPerSec) {
+    if (bytesPerSec < 1024) return '${bytesPerSec.toStringAsFixed(0)} B/s';
+    if (bytesPerSec < 1024 * 1024) return '${(bytesPerSec / 1024).toStringAsFixed(1)} KB/s';
+    return '${(bytesPerSec / (1024 * 1024)).toStringAsFixed(1)} MB/s';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('NetTrack'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download_rounded),
-            tooltip: 'Export Report',
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const ExportDialog(),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              Provider.of<DataProvider>(context, listen: false).fetchData();
-            },
-          )
-        ],
-      ),
+      extendBodyBehindAppBar: true,
       body: Consumer<DataProvider>(
         builder: (context, dataProvider, child) {
           if (dataProvider.errorMessage != null && dataProvider.appUsages.isEmpty && dataProvider.networkStats.isEmpty) {
@@ -90,13 +80,38 @@ class DashboardScreen extends StatelessWidget {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final isDesktop = constraints.maxWidth >= 800;
-                    return SingleChildScrollView(
+                    return CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const DateSelectorBar(),
+                      slivers: [
+                        SliverAppBar(
+                          pinned: true,
+                          title: const Text('NetTrack', style: TextStyle(fontWeight: FontWeight.bold)),
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          flexibleSpace: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                              child: Container(color: Colors.transparent),
+                            ),
+                          ),
+                          actions: [
+
+                            IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () {
+                                Provider.of<DataProvider>(context, listen: false).fetchData();
+                              },
+                            ),
+                          ],
+                        ),
+
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const DateSelectorBar(),
                           if (dataProvider.isUpdateAvailable)
                             Padding(
                               padding: const EdgeInsets.only(top: 16.0),
@@ -159,91 +174,96 @@ class DashboardScreen extends StatelessWidget {
                                       const SizedBox(height: 16),
                                       SizedBox(
                                         height: 300,
-                                        child: UsageChart(weeklyTrend: dataProvider.weeklyTrend),
+                                        child: UsageChart(
+                                          dailyTrend: dataProvider.dailyTrend,
+                                          weeklyTrend: dataProvider.weeklyTrend,
+                                          monthlyTrend: dataProvider.monthlyTrend,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            )
-                          else ...[
-                            DailySummaryCard(
-                              totalBytes: totalBytes,
-                              txBytes: totalTx,
-                              rxBytes: totalRx,
-                              activeAppsCount: dataProvider.activeAppsCount,
-                              peakHour: dataProvider.peakHour,
-                            ),
-                            const SizedBox(height: 24),
+                                ],
+                              )
+                            else ...[
+                              DailySummaryCard(
+                                totalBytes: totalBytes,
+                                txBytes: totalTx,
+                                rxBytes: totalRx,
+                                activeAppsCount: dataProvider.activeAppsCount,
+                                peakHour: dataProvider.peakHour,
+                              ),
+                              const SizedBox(height: 24),
                             Text('Data Usage Trend', style: Theme.of(context).textTheme.titleLarge),
                             const SizedBox(height: 16),
                             SizedBox(
                               height: 250,
-                              child: UsageChart(weeklyTrend: dataProvider.weeklyTrend),
+                              child: UsageChart(
+                                dailyTrend: dataProvider.dailyTrend,
+                                weeklyTrend: dataProvider.weeklyTrend,
+                                monthlyTrend: dataProvider.monthlyTrend,
+                              ),
                             ),
                           ],
                           const SizedBox(height: 24),
-                          
-                          // Always show top apps now that Windows is supported
-                          ...[
-                            Text('Top Data Hungry Apps', style: Theme.of(context).textTheme.titleLarge),
-                            const SizedBox(height: 16),
-                            if (topApps.isEmpty)
-                              const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(32.0),
-                                  child: Text("No app usage data found for this period."),
-                                ),
-                              )
-                            else
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: topApps.length,
-                                itemBuilder: (context, index) {
-                                  return AppUsageTile(
-                                    appUsage: topApps[index],
-                                    totalDeviceBytes: totalBytes,
-                                  );
-                                },
+                          Text('Top Data Hungry Apps', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 16),
+                          if (topApps.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: Text("No app usage data found for this period."),
                               ),
-                          ],
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: topApps.length,
+                              itemBuilder: (context, index) {
+                                return AppUsageTile(
+                                  appUsage: topApps[index],
+                                  totalDeviceBytes: totalBytes,
+                                );
+                              },
+                            ),
                           const SizedBox(height: 24),
-                          ...[
-                            Text('Network Interfaces', style: Theme.of(context).textTheme.titleLarge),
-                            const SizedBox(height: 16),
-                            if (dataProvider.networkStats.isEmpty)
-                              const Center(child: Text("No network interfaces found."))
-                            else
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: 400,
-                                  mainAxisExtent: 100,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                ),
-                                itemCount: dataProvider.networkStats.length,
-                                itemBuilder: (context, index) {
-                                  final stat = dataProvider.networkStats[index];
-                                  return Card(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: Center(
-                                        child: ListTile(
-                                          leading: const Icon(Icons.network_wifi, size: 36),
-                                          title: Text(stat.interfaceName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                          subtitle: Text("Tx: ${stat.txBytes} B | Rx: ${stat.rxBytes} B"),
-                                        ),
+                          Text('Network Interfaces', style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 16),
+                          if (dataProvider.networkStats.isEmpty)
+                            const Center(child: Text("No network interfaces found."))
+                          else
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 400,
+                                mainAxisExtent: 100,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: dataProvider.networkStats.length,
+                              itemBuilder: (context, index) {
+                                final stat = dataProvider.networkStats[index];
+                                return Card(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Center(
+                                      child: ListTile(
+                                        leading: const Icon(Icons.network_wifi, size: 36),
+                                        title: Text(stat.interfaceName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        subtitle: Text("Tx: ${stat.txBytes} B | Rx: ${stat.rxBytes} B"),
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
-                          ]
-                        ],
-                      ),
+                                  ),
+                                );
+                              },
+                            ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   }
                 ),
@@ -258,19 +278,6 @@ class DashboardScreen extends StatelessWidget {
             ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'export_fab',
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => const ExportDialog(),
-          );
-        },
-        icon: const Icon(Icons.download_rounded),
-        label: const Text('Export'),
       ),
     );
   }

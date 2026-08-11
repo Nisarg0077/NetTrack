@@ -5,6 +5,8 @@ import '../providers/data_provider.dart';
 import '../models/app_usage_model.dart';
 import '../utils/format_utils.dart';
 import '../widgets/date_selector_bar.dart';
+import '../widgets/export_dialog.dart';
+import 'dart:ui';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -28,9 +30,30 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Detailed Report'),
+        title: const Text('Detailed Report', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.download_rounded),
+            tooltip: 'Export Report',
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const ExportDialog(),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -112,8 +135,9 @@ class _ReportScreenState extends State<ReportScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const SizedBox(height: 90), // Padding for transparent app bar
               const Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: DateSelectorBar(),
               ),
               Padding(

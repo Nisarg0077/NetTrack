@@ -21,6 +21,12 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   List<double> _weeklyTrend = [];
   List<double> get weeklyTrend => _weeklyTrend;
 
+  List<double> _dailyTrend = [];
+  List<double> get dailyTrend => _dailyTrend;
+
+  List<double> _monthlyTrend = [];
+  List<double> get monthlyTrend => _monthlyTrend;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -59,6 +65,16 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
 
   String? _updateReleaseUrl;
   String? get updateReleaseUrl => _updateReleaseUrl;
+
+  double _currentDownloadSpeed = 0; // Bytes per second
+  double get currentDownloadSpeed => _currentDownloadSpeed;
+
+  double _currentUploadSpeed = 0; // Bytes per second
+  double get currentUploadSpeed => _currentUploadSpeed;
+
+  int _lastRxBytes = 0;
+  int _lastTxBytes = 0;
+  DateTime? _lastFetchTime;
 
   Timer? _refreshTimer;
   int _currentFetchId = 0;
@@ -121,6 +137,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
       _customStartDate = null;
       _customEndDate = null;
     }
+    _lastFetchTime = null;
+    _currentDownloadSpeed = 0;
+    _currentUploadSpeed = 0;
     fetchData();
   }
 
@@ -129,6 +148,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     _customStartDate = DateTime(date.year, date.month, date.day);
     _customEndDate = DateTime(date.year, date.month, date.day, 23, 59, 59);
     _selectedDate = _customStartDate;
+    _lastFetchTime = null;
+    _currentDownloadSpeed = 0;
+    _currentUploadSpeed = 0;
     fetchData();
   }
 
@@ -137,6 +159,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     _customStartDate = DateTime(start.year, start.month, start.day);
     _customEndDate = DateTime(end.year, end.month, end.day, 23, 59, 59);
     _selectedDate = null;
+    _lastFetchTime = null;
+    _currentDownloadSpeed = 0;
+    _currentUploadSpeed = 0;
     fetchData();
   }
 
@@ -239,6 +264,42 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
          SystemTrayService().updateTrayUsage(formatBytes(totalBytes));
       }
 
+      // Calculate live speeds
+      int totalRx = 0;
+      int totalTx = 0;
+      if (Platform.isWindows) {
+         for (var stat in _networkStats) {
+             totalRx += stat.rxBytes;
+             totalTx += stat.txBytes;
+         }
+      } else {
+         for (var app in _appUsages) {
+             totalRx += app.rxBytes;
+             totalTx += app.txBytes;
+         }
+      }
+
+      final now = DateTime.now();
+      if (_lastFetchTime != null && _selectedRange == DateRange.today) {
+          final diff = now.difference(_lastFetchTime!).inMilliseconds;
+          if (diff > 0) {
+              int deltaRx = totalRx - _lastRxBytes;
+              int deltaTx = totalTx - _lastTxBytes;
+              
+              if (deltaRx < 0) deltaRx = 0;
+              if (deltaTx < 0) deltaTx = 0;
+
+              _currentDownloadSpeed = (deltaRx / diff) * 1000;
+              _currentUploadSpeed = (deltaTx / diff) * 1000;
+          }
+      } else {
+          _currentDownloadSpeed = 0;
+          _currentUploadSpeed = 0;
+      }
+      _lastRxBytes = totalRx;
+      _lastTxBytes = totalTx;
+      _lastFetchTime = now;
+
       // Fast UI Update
       _isLoading = false;
       notifyListeners();
@@ -249,6 +310,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
       if (fetchId != _currentFetchId) return; // Stale fetch
       
       _peakHour = _dataUsageService.getPeakHourIndex(hourlyMb);
+      _dailyTrend = hourlyMb;
 
       // Fetch weekly trend sequentially to avoid saturating Android IPC Binder
       List<double> trend = [];
@@ -259,6 +321,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
         if (fetchId != _currentFetchId) return; // Stale fetch during loop
       }
       _weeklyTrend = trend;
+
+      // Fetch monthly trend in the background
+      _fetchMonthlyTrend(endDate, fetchId);
     } catch (e) {
       _errorMessage = "Failed to load usage data.";
     }
@@ -291,5 +356,17 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _refreshTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _fetchMonthlyTrend(DateTime endDate, int fetchId) async {
+    List<double> trend = [];
+    for (int i = 29; i >= 0; i--) {
+      DateTime dayStart = DateTime(endDate.year, endDate.month, endDate.day - i);
+      DateTime dayEnd = dayStart.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
+      trend.add(await _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd));
+      if (fetchId != _currentFetchId) return; // Stale fetch
+    }
+    _monthlyTrend = trend;
+    notifyListeners();
   }
 }

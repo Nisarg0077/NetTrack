@@ -7,7 +7,11 @@
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+#ifdef _DEBUG
+  HANDLE hMutex = CreateMutex(NULL, TRUE, L"dataUsageTracker_Mutex_Unique_Name_Debug");
+#else
   HANDLE hMutex = CreateMutex(NULL, TRUE, L"dataUsageTracker_Mutex_Unique_Name");
+#endif
   if (GetLastError() == ERROR_ALREADY_EXISTS) {
     MessageBox(NULL, L"The application is already running.", L"NetTrack", MB_ICONINFORMATION | MB_OK);
     CloseHandle(hMutex);
@@ -34,7 +38,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"net_track", origin, size)) {
+#ifdef _DEBUG
+  if (!window.Create(L"NetTrack (Debug)", origin, size)) {
+#else
+  if (!window.Create(L"NetTrack", origin, size)) {
+#endif
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

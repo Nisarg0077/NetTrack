@@ -10,15 +10,9 @@ import 'package:provider/provider.dart';
 import '../providers/data_provider.dart';
 
 enum ExportPeriodOption {
-  specificDay,
-  dateRange,
   thisWeek,
-  lastWeek,
   thisMonth,
-  lastMonth,
-  customMonth,
-  thisYear,
-  lastYear,
+  dateRange,
 }
 
 class ExportDialog extends StatefulWidget {
@@ -37,12 +31,10 @@ class _ExportDialogState extends State<ExportDialog> {
   bool _chooseSaveLocation = false;
   bool _isExporting = false;
 
-  DateTime _specificDay = DateTime.now();
   DateTimeRange _dateRange = DateTimeRange(
     start: DateTime.now().subtract(const Duration(days: 7)),
     end: DateTime.now(),
   );
-  DateTime _customMonth = DateTime.now();
 
   Map<String, dynamic> _computePeriod(ExportPeriodOption option) {
     final now = DateTime.now();
@@ -51,28 +43,10 @@ class _ExportDialogState extends State<ExportDialog> {
     String label;
 
     switch (option) {
-      case ExportPeriodOption.specificDay:
-        start = DateTime(_specificDay.year, _specificDay.month, _specificDay.day);
-        end = DateTime(_specificDay.year, _specificDay.month, _specificDay.day, 23, 59, 59);
-        label = DateFormat('MMM d, yyyy').format(start);
-        break;
-      case ExportPeriodOption.dateRange:
-        start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
-        end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
-        label = '${DateFormat('MMM d, yyyy').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
-        break;
       case ExportPeriodOption.thisWeek:
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
         start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
         end = now;
-        label = '${DateFormat('MMM d').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
-        break;
-      case ExportPeriodOption.lastWeek:
-        final startOfThisWeek = now.subtract(Duration(days: now.weekday - 1));
-        final startOfLastWeek = startOfThisWeek.subtract(const Duration(days: 7));
-        start = DateTime(startOfLastWeek.year, startOfLastWeek.month, startOfLastWeek.day);
-        final endOfLastWeek = startOfThisWeek.subtract(const Duration(milliseconds: 1));
-        end = endOfLastWeek;
         label = '${DateFormat('MMM d').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
         break;
       case ExportPeriodOption.thisMonth:
@@ -80,31 +54,10 @@ class _ExportDialogState extends State<ExportDialog> {
         end = now;
         label = DateFormat('MMMM yyyy').format(now);
         break;
-      case ExportPeriodOption.lastMonth:
-        final startOfThisMonth = DateTime(now.year, now.month, 1);
-        final endOfLastMonth = startOfThisMonth.subtract(const Duration(milliseconds: 1));
-        start = DateTime(endOfLastMonth.year, endOfLastMonth.month, 1);
-        end = endOfLastMonth;
-        label = DateFormat('MMMM yyyy').format(start);
-        break;
-      case ExportPeriodOption.customMonth:
-        start = DateTime(_customMonth.year, _customMonth.month, 1);
-        final nextMonth = _customMonth.month == 12
-            ? DateTime(_customMonth.year + 1, 1, 1)
-            : DateTime(_customMonth.year, _customMonth.month + 1, 1);
-        end = nextMonth.subtract(const Duration(milliseconds: 1));
-        if (end.isAfter(now)) end = now;
-        label = DateFormat('MMMM yyyy').format(start);
-        break;
-      case ExportPeriodOption.thisYear:
-        start = DateTime(now.year, 1, 1);
-        end = now;
-        label = DateFormat('yyyy').format(now);
-        break;
-      case ExportPeriodOption.lastYear:
-        start = DateTime(now.year - 1, 1, 1);
-        end = DateTime(now.year - 1, 12, 31, 23, 59, 59);
-        label = DateFormat('yyyy').format(start);
+      case ExportPeriodOption.dateRange:
+        start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
+        end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
+        label = '${DateFormat('MMM d, yyyy').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
         break;
     }
 
@@ -113,42 +66,15 @@ class _ExportDialogState extends State<ExportDialog> {
 
   String _getOptionTitle(ExportPeriodOption option) {
     switch (option) {
-      case ExportPeriodOption.specificDay:
-        return 'Specific Day';
-      case ExportPeriodOption.dateRange:
-        return 'Date Range';
       case ExportPeriodOption.thisWeek:
         return 'This Week';
-      case ExportPeriodOption.lastWeek:
-        return 'Last Week';
       case ExportPeriodOption.thisMonth:
         return 'This Month';
-      case ExportPeriodOption.lastMonth:
-        return 'Last Month';
-      case ExportPeriodOption.customMonth:
-        return 'Custom Month';
-      case ExportPeriodOption.thisYear:
-        return 'This Year';
-      case ExportPeriodOption.lastYear:
-        return 'Last Year';
+      case ExportPeriodOption.dateRange:
+        return 'Custom Date Range';
     }
   }
 
-  Future<void> _pickSpecificDay() async {
-    final firstDate = await SettingsService().getAppInstallationDate();
-    if (!mounted) return;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _specificDay.isBefore(firstDate) ? firstDate : _specificDay,
-      firstDate: firstDate,
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _specificDay = picked;
-      });
-    }
-  }
 
   Future<void> _pickDateRange() async {
     final firstDate = await SettingsService().getAppInstallationDate();
@@ -166,22 +92,7 @@ class _ExportDialogState extends State<ExportDialog> {
     }
   }
 
-  Future<void> _pickCustomMonth() async {
-    final firstDate = await SettingsService().getAppInstallationDate();
-    if (!mounted) return;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _customMonth,
-      firstDate: firstDate,
-      lastDate: DateTime.now(),
-      initialDatePickerMode: DatePickerMode.year,
-    );
-    if (picked != null) {
-      setState(() {
-        _customMonth = picked;
-      });
-    }
-  }
+
 
   Future<void> _runExport() async {
     setState(() {
@@ -515,18 +426,6 @@ class _ExportDialogState extends State<ExportDialog> {
   }
 
   Widget? _buildOptionSubtitle(ExportPeriodOption option) {
-    if (option == ExportPeriodOption.specificDay &&
-        _selectedOption == ExportPeriodOption.specificDay) {
-      return TextButton.icon(
-        onPressed: _pickSpecificDay,
-        icon: const Icon(Icons.calendar_today, size: 14),
-        label: Text(DateFormat('MMM d, yyyy').format(_specificDay)),
-        style: TextButton.styleFrom(
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.zero,
-        ),
-      );
-    }
     if (option == ExportPeriodOption.dateRange &&
         _selectedOption == ExportPeriodOption.dateRange) {
       return TextButton.icon(
@@ -534,18 +433,6 @@ class _ExportDialogState extends State<ExportDialog> {
         icon: const Icon(Icons.date_range, size: 14),
         label: Text(
             '${DateFormat('MMM d').format(_dateRange.start)} – ${DateFormat('MMM d, yyyy').format(_dateRange.end)}'),
-        style: TextButton.styleFrom(
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.zero,
-        ),
-      );
-    }
-    if (option == ExportPeriodOption.customMonth &&
-        _selectedOption == ExportPeriodOption.customMonth) {
-      return TextButton.icon(
-        onPressed: _pickCustomMonth,
-        icon: const Icon(Icons.calendar_month, size: 14),
-        label: Text(DateFormat('MMMM yyyy').format(_customMonth)),
         style: TextButton.styleFrom(
           alignment: Alignment.centerLeft,
           padding: EdgeInsets.zero,
