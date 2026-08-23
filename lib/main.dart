@@ -14,7 +14,7 @@ import 'services/system_tray_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  if (Platform.isWindows) {
+  if (Platform.isWindows || Platform.isLinux) {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     bool isMsix = Platform.resolvedExecutable.contains('WindowsApps');
     launchAtStartup.setup(

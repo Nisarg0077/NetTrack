@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.net_track"
-    compileSdk = 37
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

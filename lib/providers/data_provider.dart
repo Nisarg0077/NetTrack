@@ -244,8 +244,8 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
 
       _activeAppsCount = _appUsages.where((app) => (app.rxBytes + app.txBytes) > 0).length;
       
-      // Update system tray on Windows
-      if (Platform.isWindows) {
+      // Update system tray on Windows and Linux
+      if (Platform.isWindows || Platform.isLinux) {
          int totalRx = 0;
          int totalTx = 0;
          for (var stat in _networkStats) {
@@ -267,7 +267,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
       // Calculate live speeds
       int totalRx = 0;
       int totalTx = 0;
-      if (Platform.isWindows) {
+      if (Platform.isWindows || Platform.isLinux) {
          for (var stat in _networkStats) {
              totalRx += stat.rxBytes;
              totalTx += stat.txBytes;

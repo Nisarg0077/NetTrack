@@ -165,16 +165,43 @@ class DataUsageService {
     }
   }
 
+  Future<Map<String, int>> _getLinuxActiveApps() async {
+    Map<String, int> activeApps = {};
+    if (Platform.isLinux) {
+      try {
+        final result = await Process.run('ss', ['-tunp']);
+        if (result.exitCode == 0) {
+          final lines = result.stdout.toString().split('\n');
+          for (var line in lines) {
+             final match = RegExp(r'users:\(\("([^"]+)"').firstMatch(line);
+             if (match != null) {
+                String appName = match.group(1)!;
+                activeApps[appName] = (activeApps[appName] ?? 0) + 1;
+             }
+          }
+        }
+      } catch (e) {
+         debugPrint("Error running ss: $e");
+      }
+    }
+    return activeApps;
+  }
+
   Future<void> updateWindowsAppUsageData() async {
-    if (!Platform.isWindows) return;
+    if (!Platform.isWindows && !Platform.isLinux) return;
     
     try {
-      final activeApps = await _windowsNetworkChannel.invokeMethod('getActiveAppUsage');
-      File('win_debug.log').writeAsStringSync('Channel returned: ${activeApps?.length} apps.\n', mode: FileMode.append);
+      dynamic activeApps;
+      if (Platform.isWindows) {
+        activeApps = await _windowsNetworkChannel.invokeMethod('getActiveAppUsage');
+      } else if (Platform.isLinux) {
+        activeApps = await _getLinuxActiveApps();
+      }
+      File('win_debug.log').writeAsStringSync('Channel returned: ${(activeApps as Map?)?.length} apps.\n', mode: FileMode.append);
       
       if (activeApps == null || (activeApps as Map).isEmpty) return;
 
-      final currentStats = await _getCurrentWindowsStats();
+      final currentStats = await _getCurrentDesktopStats();
       final prefs = await SharedPreferences.getInstance();
       
       int lastRx = prefs.getInt('win_last_app_rx_total') ?? currentStats['rx']!;
@@ -371,7 +398,7 @@ class DataUsageService {
       }
   }
 
-  Future<Map<String, int>> _getCurrentWindowsStats() async {
+  Future<Map<String, int>> _getCurrentDesktopStats() async {
       int rx = 0;
       int tx = 0;
       if (Platform.isWindows) {
@@ -392,6 +419,26 @@ class DataUsageService {
         } catch(e) {
             debugPrint("Error running netstat: $e");
         }
+      } else if (Platform.isLinux) {
+        try {
+          final file = File('/proc/net/dev');
+          if (await file.exists()) {
+            final lines = await file.readAsLines();
+            for (var line in lines) {
+              if (line.contains(':')) {
+                final parts = line.split(':');
+                final interfaceName = parts[0].trim();
+                final data = parts[1].trim().split(RegExp(r'\s+'));
+                if (data.length >= 9 && interfaceName != 'lo') {
+                  rx += int.tryParse(data[0]) ?? 0;
+                  tx += int.tryParse(data[8]) ?? 0;
+                }
+              }
+            }
+          }
+        } catch(e) {
+          debugPrint("Error reading /proc/net/dev for linux stats: $e");
+        }
       }
       return {'rx': rx, 'tx': tx};
   }
@@ -407,8 +454,8 @@ class DataUsageService {
         int rx = 0;
         int tx = 0;
         
-        if (Platform.isWindows) {
-           final current = await _getCurrentWindowsStats();
+        if (Platform.isWindows || Platform.isLinux) {
+           final current = await _getCurrentDesktopStats();
            await _updateWindowsAccumulator(current['rx'] ?? 0, current['tx'] ?? 0);
            
            if (startDate != null && endDate != null) {
@@ -586,7 +633,7 @@ class DataUsageService {
         }());
       }
       trend = await Future.wait(futures);
-    } else if (Platform.isWindows) {
+    } else if (Platform.isWindows || Platform.isLinux) {
       final prefs = await SharedPreferences.getInstance();
       for (int i = 0; i < 7; i++) {
         DateTime date = DateTime(today.year, today.month, today.day - (6 - i));

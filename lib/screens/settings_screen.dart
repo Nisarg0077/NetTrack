@@ -33,7 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _checkStartupState() async {
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       bool isEnabled = await launchAtStartup.isEnabled();
       setState(() {
         _runAtStartup = isEnabled;
@@ -42,11 +42,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _checkBackgroundService() async {
-    final service = FlutterBackgroundService();
-    bool isRunning = await service.isRunning();
-    setState(() {
-      _isBackgroundServiceRunning = isRunning;
-    });
+    if (!Platform.isAndroid) return;
+    try {
+      final service = FlutterBackgroundService();
+      bool isRunning = await service.isRunning();
+      setState(() {
+        _isBackgroundServiceRunning = isRunning;
+      });
+    } catch (e) {
+      debugPrint("Background check error: $e");
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -87,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               themeProvider.toggleTheme();
             },
           ),
-          if (Platform.isWindows)
+          if (Platform.isWindows || Platform.isLinux)
             SwitchListTile(
               title: const Text('Run at Startup'),
               subtitle: const Text('Automatically launch the app when you log in'),
@@ -111,22 +116,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               },
             ),
-          SwitchListTile(
-            title: const Text('Background Tracking'),
-            subtitle: const Text('Track usage in real-time in background'),
-            value: _isBackgroundServiceRunning,
-            onChanged: (bool value) async {
-              final service = FlutterBackgroundService();
-              if (value) {
-                await service.startService();
-              } else {
-                service.invoke("stopService");
-              }
-              setState(() {
-                _isBackgroundServiceRunning = value;
-              });
-            },
-          ),
+          if (Platform.isAndroid)
+            SwitchListTile(
+              title: const Text('Background Tracking'),
+              subtitle: const Text('Track usage in real-time in background'),
+              value: _isBackgroundServiceRunning,
+              onChanged: (bool value) async {
+                final service = FlutterBackgroundService();
+                if (value) {
+                  await service.startService();
+                } else {
+                  service.invoke("stopService");
+                }
+                setState(() {
+                  _isBackgroundServiceRunning = value;
+                });
+              },
+            ),
           const Divider(),
           ListTile(
             title: const Text('Permissions'),

@@ -14,9 +14,10 @@ class SystemTrayService with TrayListener, WindowListener {
   }
 
   SystemTrayService._internal();
+  int _iconToggle = 0;
 
   Future<void> init() async {
-    if (!Platform.isWindows) return;
+    if (!Platform.isWindows && !Platform.isLinux) return;
 
     await windowManager.ensureInitialized();
 
@@ -45,7 +46,11 @@ class SystemTrayService with TrayListener, WindowListener {
     await trayManager.setIcon(
       Platform.isWindows ? 'windows/runner/resources/app_icon.ico' : 'assets/icon.png',
     );
-    await trayManager.setToolTip('NetTrack - Loading...');
+    try {
+      await trayManager.setToolTip('NetTrack - Loading...');
+    } catch (e) {
+      debugPrint('ToolTip not supported on this platform: $e');
+    }
 
     Menu menu = Menu(
       items: [
@@ -79,10 +84,14 @@ class SystemTrayService with TrayListener, WindowListener {
   }
 
   Future<void> updateTrayUsage(String usageText) async {
-    if (!Platform.isWindows) return;
+    if (!Platform.isWindows && !Platform.isLinux) return;
     
     // Update Tooltip
-    await trayManager.setToolTip('NetTrack: $usageText');
+    try {
+      await trayManager.setToolTip('NetTrack: $usageText');
+    } catch (e) {
+      // Ignore on Linux
+    }
     
     // Dynamically generate high quality icon using Flutter Canvas
     try {
@@ -92,28 +101,25 @@ class SystemTrayService with TrayListener, WindowListener {
         final canvas = ui.Canvas(recorder);
         const size = Size(128, 128);
         
-        // Draw deep indigo background with rounded corners
-        final paint = Paint()
-          ..color = const Color(0xFF1F2937) // Gray 800
-          ..style = PaintingStyle.fill;
-        final rrect = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(24));
-        canvas.drawRRect(rrect, paint);
-        
-        // Draw vivid indigo border
-        final borderPaint = Paint()
-          ..color = const Color(0xFF4F46E5) // Indigo 600
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 10;
-        canvas.drawRRect(rrect, borderPaint);
-        
+        double fSize = 110;
+        if (shortText.length > 2) fSize = 85;
+        if (shortText.length > 3) fSize = 65;
+        if (shortText.length > 4) fSize = 50;
+
         // Draw text with antialiasing
         final textPainter = TextPainter(
           text: TextSpan(
             text: shortText,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 48,
+              fontSize: fSize,
               fontWeight: FontWeight.w900,
+              height: 1.0,
+              shadows: const [
+                Shadow(offset: Offset(0, 2), blurRadius: 8.0, color: Colors.black87),
+                Shadow(offset: Offset(2, 2), blurRadius: 4.0, color: Colors.black54),
+                Shadow(offset: Offset(-1, -1), blurRadius: 2.0, color: Colors.black54),
+              ],
             ),
           ),
           textDirection: TextDirection.ltr,
@@ -131,15 +137,36 @@ class SystemTrayService with TrayListener, WindowListener {
         final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
         
         if (byteData != null) {
-            // Convert pristine PNG to ICO using image package
-            final imgImage = img.decodePng(byteData.buffer.asUint8List());
-            if (imgImage != null) {
-                final icoBytes = img.encodeIco(imgImage);
-                final tempDir = await getTemporaryDirectory();
-                final file = File('${tempDir.path}\\nettrack_tray.ico');
-                await file.writeAsBytes(icoBytes);
-                
+            final tempDir = await getTemporaryDirectory();
+            // Alternate filenames to force Linux/AppIndicator to reload the cached icon
+            _iconToggle = (_iconToggle + 1) % 2;
+            
+            // Build a dynamic menu showing the usage
+            Menu menu = Menu(
+              items: [
+                MenuItem(key: 'usage_info', label: 'Usage: $usageText', disabled: true),
+                MenuItem.separator(),
+                MenuItem(key: 'show_app', label: 'Open NetTrack'),
+                MenuItem(key: 'exit_app', label: 'Exit'),
+              ],
+            );
+
+            if (Platform.isWindows) {
+                // Convert pristine PNG to ICO using image package
+                final imgImage = img.decodePng(byteData.buffer.asUint8List());
+                if (imgImage != null) {
+                    final icoBytes = img.encodeIco(imgImage);
+                    final file = File('${tempDir.path}/nettrack_tray_$_iconToggle.ico');
+                    await file.writeAsBytes(icoBytes);
+                    await trayManager.setIcon(file.path);
+                    await trayManager.setContextMenu(menu);
+                }
+            } else {
+                // Save directly as PNG for Linux for sharper rendering
+                final file = File('${tempDir.path}/nettrack_tray_$_iconToggle.png');
+                await file.writeAsBytes(byteData.buffer.asUint8List());
                 await trayManager.setIcon(file.path);
+                await trayManager.setContextMenu(menu);
             }
         }
     } catch (e) {
@@ -157,8 +184,12 @@ class SystemTrayService with TrayListener, WindowListener {
 
   @override
   void onTrayIconMouseDown() {
-    windowManager.show();
-    windowManager.focus();
+    if (Platform.isLinux) {
+      trayManager.popUpContextMenu();
+    } else {
+      windowManager.show();
+      windowManager.focus();
+    }
   }
 
   @override
