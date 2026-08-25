@@ -64,37 +64,53 @@ class _UsageChartState extends State<UsageChart> {
     final surfaceColor = Theme.of(context).colorScheme.surface;
 
     return FrostedGlassCard(
-      padding: const EdgeInsets.only(right: 22.0, left: 8.0, top: 24, bottom: 16),
+      padding: const EdgeInsets.only(right: 20.0, left: 8.0, top: 20, bottom: 16),
+      borderRadius: 24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 14.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Usage Trends',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.show_chart_rounded, color: primaryColor, size: 16),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Usage Trends',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ],
                 ),
-                // Simple filter toggle
-                if (widget.showFilters) Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildFilterChip(0, '1D'),
-                      _buildFilterChip(1, '1W'),
-                      _buildFilterChip(2, '1M'),
-                    ],
-                  ),
-                )
+                if (widget.showFilters)
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildFilterChip(0, '1D'),
+                        _buildFilterChip(1, '1W'),
+                        _buildFilterChip(2, '1M'),
+                      ],
+                    ),
+                  )
               ],
             ),
           ),

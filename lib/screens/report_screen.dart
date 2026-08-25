@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/data_provider.dart';
@@ -6,7 +7,6 @@ import '../models/app_usage_model.dart';
 import '../utils/format_utils.dart';
 import '../widgets/date_selector_bar.dart';
 import '../widgets/export_dialog.dart';
-import 'dart:ui';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -29,61 +29,44 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = theme.colorScheme.primary;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text('Detailed Report', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download_rounded),
-            tooltip: 'Export Report',
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const ExportDialog(),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              Provider.of<DataProvider>(context, listen: false).fetchData();
-            },
-          )
-        ],
-      ),
       body: Consumer<DataProvider>(
         builder: (context, dataProvider, child) {
           if (dataProvider.errorMessage != null && dataProvider.appUsages.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
-                  const SizedBox(height: 16),
-                  Text(dataProvider.errorMessage!),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => dataProvider.fetchData(),
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(CupertinoIcons.exclamationmark_triangle_fill, size: 36, color: theme.colorScheme.error),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(dataProvider.errorMessage!, textAlign: TextAlign.center),
+                    const SizedBox(height: 20),
+                    CupertinoButton.filled(
+                      onPressed: () => dataProvider.fetchData(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           if (dataProvider.isLoading && dataProvider.appUsages.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CupertinoActivityIndicator(radius: 14));
           }
 
           // Total bytes calculation for percentage
@@ -132,131 +115,239 @@ class _ReportScreenState extends State<ReportScreen> {
             return _isAscending ? result : -result;
           });
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 90), // Padding for transparent app bar
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: DateSelectorBar(),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search apps...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                      borderSide: BorderSide.none,
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            slivers: [
+              CupertinoSliverNavigationBar(
+                largeTitle: const Text('Detailed Report'),
+                backgroundColor: isDark
+                    ? const Color(0x99000000)
+                    : const Color(0x99F2F2F7),
+                border: null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      child: const Icon(CupertinoIcons.share, size: 20),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => const ExportDialog(),
+                        );
+                      },
                     ),
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value.toLowerCase();
-                    });
-                  },
+                    const SizedBox(width: 8),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      child: const Icon(CupertinoIcons.arrow_clockwise, size: 20),
+                      onPressed: () {
+                        Provider.of<DataProvider>(context, listen: false).fetchData();
+                      },
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                child: filteredApps.isEmpty
-                    ? const Center(child: Text("No apps found."))
-                    : LayoutBuilder(
-                        builder: (context, constraints) {
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                child: DataTable(
-                                  sortColumnIndex: _sortColumnIndex,
-                                  sortAscending: _isAscending,
-                                  columns: [
-                                    DataColumn(
-                                      label: const Text('App Name'),
-                                      onSort: _onSort,
-                                    ),
-                                    DataColumn(
-                                      label: const Text('Download'),
-                                      numeric: true,
-                                      onSort: _onSort,
-                                    ),
-                                    DataColumn(
-                                      label: const Text('Upload'),
-                                      numeric: true,
-                                      onSort: _onSort,
-                                    ),
-                                    DataColumn(
-                                      label: const Text('% of Total'),
-                                      numeric: true,
-                                      onSort: _onSort,
-                                    ),
-                                    DataColumn(
-                                      label: const Text('Total Usage'),
-                                      numeric: true,
-                                      onSort: _onSort,
-                                    ),
-                                  ],
-                                  rows: filteredApps.map((app) {
-                                    final percentage = totalBytes == 0
-                                        ? 0.0
-                                        : (app.totalBytes / totalBytes * 100).clamp(0.0, 100.0);
-                                    
-                                    return DataRow(
-                                      cells: [
-                                        DataCell(
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              if (app.appIcon != null)
-                                                Padding(
-                                                  padding: const EdgeInsets.only(right: 8.0),
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(6),
-                                                    child: Image.memory(
-                                                      app.appIcon!,
-                                                      width: 24,
-                                                      height: 24,
-                                                    ),
+              CupertinoSliverRefreshControl(
+                onRefresh: () async {
+                  await dataProvider.fetchData();
+                },
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const DateSelectorBar(),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: CupertinoSearchTextField(
+                          placeholder: 'Filter report by app name...',
+                          backgroundColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                            fontSize: 14,
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value.toLowerCase();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
+                  child: filteredApps.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(36),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "No matching app telemetry records found.",
+                              style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13.5),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
+                              width: 0.8,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: DataTable(
+                                sortColumnIndex: _sortColumnIndex,
+                                sortAscending: _isAscending,
+                                headingRowColor: WidgetStateProperty.all(
+                                  isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+                                ),
+                                headingTextStyle: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12.5,
+                                  color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                                ),
+                                columns: [
+                                  DataColumn(
+                                    label: const Text('App'),
+                                    onSort: _onSort,
+                                  ),
+                                  DataColumn(
+                                    label: const Text('Download'),
+                                    numeric: true,
+                                    onSort: _onSort,
+                                  ),
+                                  DataColumn(
+                                    label: const Text('Upload'),
+                                    numeric: true,
+                                    onSort: _onSort,
+                                  ),
+                                  DataColumn(
+                                    label: const Text('Share'),
+                                    numeric: true,
+                                    onSort: _onSort,
+                                  ),
+                                  DataColumn(
+                                    label: const Text('Total Usage'),
+                                    numeric: true,
+                                    onSort: _onSort,
+                                  ),
+                                ],
+                                rows: filteredApps.map((app) {
+                                  final percentage = totalBytes == 0
+                                      ? 0.0
+                                      : (app.totalBytes / totalBytes * 100).clamp(0.0, 100.0);
+
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (app.appIcon != null)
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 8.0),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  child: Image.memory(
+                                                    app.appIcon!,
+                                                    width: 24,
+                                                    height: 24,
                                                   ),
-                                                )
-                                              else
-                                                Padding(
-                                                  padding: const EdgeInsets.only(right: 8.0),
-                                                  child: Platform.isWindows
-                                                      ? const Icon(Icons.window, size: 24, color: Colors.blue)
-                                                      : const Icon(Icons.android, size: 24, color: Colors.green),
                                                 ),
-                                              ConstrainedBox(
-                                                constraints: const BoxConstraints(maxWidth: 150),
-                                                child: Text(
-                                                  app.appName,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                              )
+                                            else
+                                              Padding(
+                                                padding: const EdgeInsets.only(right: 8.0),
+                                                child: Icon(
+                                                  Platform.isWindows
+                                                      ? CupertinoIcons.desktopcomputer
+                                                      : CupertinoIcons.device_phone_portrait,
+                                                  size: 20,
+                                                  color: primaryColor,
                                                 ),
                                               ),
-                                            ],
-                                          )
+                                            ConstrainedBox(
+                                              constraints: const BoxConstraints(maxWidth: 160),
+                                              child: Text(
+                                                app.appName,
+                                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        DataCell(Text(FormatUtils.formatBytes(app.rxBytes))),
-                                        DataCell(Text(FormatUtils.formatBytes(app.txBytes))),
-                                        DataCell(Text('${percentage.toStringAsFixed(1)}%')),
-                                        DataCell(Text(
-                                          FormatUtils.formatBytes(app.totalBytes),
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        )),
-                                      ],
-                                    );
-                                  }).toList(),
-                                ),
+                                      ),
+                                      DataCell(Text(
+                                        FormatUtils.formatBytes(app.rxBytes),
+                                        style: const TextStyle(fontSize: 12.5),
+                                      )),
+                                      DataCell(Text(
+                                        FormatUtils.formatBytes(app.txBytes),
+                                        style: const TextStyle(fontSize: 12.5),
+                                      )),
+                                      DataCell(Text(
+                                        '${percentage.toStringAsFixed(1)}%',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                                        ),
+                                      )),
+                                      DataCell(Text(
+                                        FormatUtils.formatBytes(app.totalBytes),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                          color: primaryColor,
+                                        ),
+                                      )),
+                                    ],
+                                  );
+                                }).toList(),
                               ),
                             ),
-                          );
-                        }
-                      ),
+                          ),
+                        ),
+                ),
               ),
             ],
           );

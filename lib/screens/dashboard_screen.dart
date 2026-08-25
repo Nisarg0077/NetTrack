@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../providers/data_provider.dart';
 import '../widgets/daily_summary_card.dart';
@@ -6,9 +7,8 @@ import '../widgets/date_selector_bar.dart';
 import '../widgets/update_dialog.dart';
 import '../widgets/usage_chart.dart';
 import '../widgets/app_usage_tile.dart';
-import '../widgets/daily_summary_card.dart';
+import '../utils/format_utils.dart';
 import 'dart:io';
-import 'dart:ui';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -18,38 +18,49 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String _formatSpeed(double bytesPerSec) {
-    if (bytesPerSec < 1024) return '${bytesPerSec.toStringAsFixed(0)} B/s';
-    if (bytesPerSec < 1024 * 1024) return '${(bytesPerSec / 1024).toStringAsFixed(1)} KB/s';
-    return '${(bytesPerSec / (1024 * 1024)).toStringAsFixed(1)} MB/s';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Consumer<DataProvider>(
         builder: (context, dataProvider, child) {
           if (dataProvider.errorMessage != null && dataProvider.appUsages.isEmpty && dataProvider.networkStats.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
-                  const SizedBox(height: 16),
-                  Text(dataProvider.errorMessage!),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => dataProvider.fetchData(),
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(CupertinoIcons.exclamationmark_triangle_fill, size: 36, color: theme.colorScheme.error),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      dataProvider.errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 20),
+                    CupertinoButton.filled(
+                      onPressed: () => dataProvider.fetchData(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           if (dataProvider.isLoading && dataProvider.appUsages.isEmpty && dataProvider.networkStats.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CupertinoActivityIndicator(radius: 14));
           }
 
           // Calculate total usage
@@ -73,207 +84,323 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           return Stack(
             children: [
-              RefreshIndicator(
-                onRefresh: () async {
-                  await dataProvider.fetchData();
-                },
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isDesktop = constraints.maxWidth >= 800;
-                    return CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverAppBar(
-                          pinned: true,
-                          title: const Text('NetTrack', style: TextStyle(fontWeight: FontWeight.bold)),
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          flexibleSpace: ClipRect(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                              child: Container(color: Colors.transparent),
-                            ),
-                          ),
-                          actions: [
+              CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                slivers: [
+                  CupertinoSliverNavigationBar(
+                    largeTitle: const Text('Overview'),
+                    backgroundColor: isDark
+                        ? const Color(0x99000000)
+                        : const Color(0x99F2F2F7),
+                    border: null,
+                    trailing: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      child: const Icon(CupertinoIcons.arrow_clockwise, size: 20),
+                      onPressed: () {
+                        Provider.of<DataProvider>(context, listen: false).fetchData();
+                      },
+                    ),
+                  ),
 
-                            IconButton(
-                              icon: const Icon(Icons.refresh),
-                              onPressed: () {
-                                Provider.of<DataProvider>(context, listen: false).fetchData();
-                              },
-                            ),
-                          ],
-                        ),
+                  CupertinoSliverRefreshControl(
+                    onRefresh: () async {
+                      await dataProvider.fetchData();
+                    },
+                  ),
 
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const DateSelectorBar(),
-                          if (dataProvider.isUpdateAvailable)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: Material(
-                                color: Colors.blueAccent.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => UpdateDialog(
-                                        latestVersion: dataProvider.updateLatestVersion ?? '',
-                                        releaseNotes: dataProvider.updateReleaseNotes ?? '',
-                                        releaseUrl: dataProvider.updateReleaseUrl ?? '',
-                                      ),
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.system_update, color: Colors.blueAccent),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            'Update ${dataProvider.updateLatestVersion} is available! Tap to download.',
-                                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                  SliverToBoxAdapter(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isDesktop = constraints.maxWidth >= 768;
+
+                        return Padding(
+                          padding: EdgeInsets.fromLTRB(16, 12, 16, isDesktop ? 40 : 110),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const DateSelectorBar(),
+                              const SizedBox(height: 16),
+
+                              if (dataProvider.isUpdateAvailable)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(16),
+                                      onTap: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => UpdateDialog(
+                                            latestVersion: dataProvider.updateLatestVersion ?? '',
+                                            releaseNotes: dataProvider.updateReleaseNotes ?? '',
+                                            releaseUrl: dataProvider.updateReleaseUrl ?? '',
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary.withValues(alpha: isDark ? 0.18 : 0.1),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(
+                                            color: theme.colorScheme.primary.withValues(alpha: isDark ? 0.35 : 0.2),
+                                            width: 0.8,
                                           ),
                                         ),
-                                        const Icon(Icons.chevron_right, color: Colors.blueAccent),
-                                      ],
+                                        child: Row(
+                                          children: [
+                                            Icon(CupertinoIcons.arrow_down_circle_fill, color: theme.colorScheme.primary, size: 22),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                'Update ${dataProvider.updateLatestVersion} is available! Tap to install.',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 13.5,
+                                                  color: theme.colorScheme.primary,
+                                                ),
+                                              ),
+                                            ),
+                                            Icon(CupertinoIcons.chevron_right, color: theme.colorScheme.primary, size: 16),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          const SizedBox(height: 16),
-                          if (isDesktop)
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 1,
-                                  child: DailySummaryCard(
-                                    totalBytes: totalBytes,
-                                    txBytes: totalTx,
-                                    rxBytes: totalRx,
-                                    activeAppsCount: dataProvider.activeAppsCount,
-                                    peakHour: dataProvider.peakHour,
-                                  ),
-                                ),
-                                const SizedBox(width: 24),
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Data Usage Trend', style: Theme.of(context).textTheme.titleLarge),
-                                      const SizedBox(height: 16),
-                                      SizedBox(
-                                        height: 300,
+
+                              if (isDesktop)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: DailySummaryCard(
+                                        totalBytes: totalBytes,
+                                        txBytes: totalTx,
+                                        rxBytes: totalRx,
+                                        activeAppsCount: dataProvider.activeAppsCount,
+                                        peakHour: dataProvider.peakHour,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Expanded(
+                                      flex: 7,
+                                      child: SizedBox(
+                                        height: 380,
                                         child: UsageChart(
                                           dailyTrend: dataProvider.dailyTrend,
                                           weeklyTrend: dataProvider.weeklyTrend,
                                           monthlyTrend: dataProvider.monthlyTrend,
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                )
+                              else ...[
+                                DailySummaryCard(
+                                  totalBytes: totalBytes,
+                                  txBytes: totalTx,
+                                  rxBytes: totalRx,
+                                  activeAppsCount: dataProvider.activeAppsCount,
+                                  peakHour: dataProvider.peakHour,
+                                ),
+                                const SizedBox(height: 18),
+                                SizedBox(
+                                  height: 270,
+                                  child: UsageChart(
+                                    dailyTrend: dataProvider.dailyTrend,
+                                    weeklyTrend: dataProvider.weeklyTrend,
+                                    monthlyTrend: dataProvider.monthlyTrend,
                                   ),
                                 ),
-                                ],
-                              )
-                            else ...[
-                              DailySummaryCard(
-                                totalBytes: totalBytes,
-                                txBytes: totalTx,
-                                rxBytes: totalRx,
-                                activeAppsCount: dataProvider.activeAppsCount,
-                                peakHour: dataProvider.peakHour,
-                              ),
-                              const SizedBox(height: 24),
-                            Text('Data Usage Trend', style: Theme.of(context).textTheme.titleLarge),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              height: 250,
-                              child: UsageChart(
-                                dailyTrend: dataProvider.dailyTrend,
-                                weeklyTrend: dataProvider.weeklyTrend,
-                                monthlyTrend: dataProvider.monthlyTrend,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 24),
-                          Text('Top Data Hungry Apps', style: Theme.of(context).textTheme.titleLarge),
-                          const SizedBox(height: 16),
-                          if (topApps.isEmpty)
-                            const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(32.0),
-                                child: Text("No app usage data found for this period."),
-                              ),
-                            )
-                          else
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: topApps.length,
-                              itemBuilder: (context, index) {
-                                return AppUsageTile(
-                                  appUsage: topApps[index],
-                                  totalDeviceBytes: totalBytes,
-                                );
-                              },
-                            ),
-                          const SizedBox(height: 24),
-                          Text('Network Interfaces', style: Theme.of(context).textTheme.titleLarge),
-                          const SizedBox(height: 16),
-                          if (dataProvider.networkStats.isEmpty)
-                            const Center(child: Text("No network interfaces found."))
-                          else
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent: 400,
-                                mainAxisExtent: 100,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                              ),
-                              itemCount: dataProvider.networkStats.length,
-                              itemBuilder: (context, index) {
-                                final stat = dataProvider.networkStats[index];
-                                return Card(
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: Center(
-                                      child: ListTile(
-                                        leading: const Icon(Icons.network_wifi, size: 36),
-                                        title: Text(stat.interfaceName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                        subtitle: Text("Tx: ${stat.txBytes} B | Rx: ${stat.rxBytes} B"),
-                                      ),
+                              ],
+
+                              const SizedBox(height: 28),
+
+                              // Top Apps Section
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Top Data Hungry Apps',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18,
+                                      letterSpacing: -0.3,
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                              ],
-                            ),
+                                  Text(
+                                    'Top ${topApps.length}',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              if (topApps.isEmpty)
+                                Container(
+                                  padding: const EdgeInsets.all(28),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "No network activity recorded for this timeframe.",
+                                      style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13.5),
+                                    ),
+                                  ),
+                                )
+                              else
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: topApps.length,
+                                  itemBuilder: (context, index) {
+                                    return AppUsageTile(
+                                      appUsage: topApps[index],
+                                      totalDeviceBytes: totalBytes,
+                                    );
+                                  },
+                                ),
+
+                              const SizedBox(height: 28),
+
+                              // Network Interfaces Section
+                              Text(
+                                'Hardware Interfaces',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 18,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              if (dataProvider.networkStats.isEmpty)
+                                Container(
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "No local network adapters detected.",
+                                      style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13.5),
+                                    ),
+                                  ),
+                                )
+                              else
+                                GridView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: 420,
+                                    mainAxisExtent: 84,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                  ),
+                                  itemCount: dataProvider.networkStats.length,
+                                  itemBuilder: (context, index) {
+                                    final stat = dataProvider.networkStats[index];
+                                    final isWifi = stat.interfaceName.toLowerCase().contains('wi-fi') ||
+                                        stat.interfaceName.toLowerCase().contains('wlan') ||
+                                        stat.interfaceName.toLowerCase().contains('wireless');
+
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
+                                          width: 0.8,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Icon(
+                                              isWifi ? CupertinoIcons.wifi : CupertinoIcons.bolt_horizontal_circle,
+                                              size: 20,
+                                              color: theme.colorScheme.primary,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  stat.interfaceName,
+                                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  "Tx: ${FormatUtils.formatBytes(stat.txBytes)}  •  Rx: ${FormatUtils.formatBytes(stat.rxBytes)}",
+                                                  style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
                           ),
-                        ),
-                      ],
-                    );
-                  }
-                ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
               if (dataProvider.isLoading && (dataProvider.appUsages.isNotEmpty || dataProvider.networkStats.isNotEmpty))
                 const Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  child: LinearProgressIndicator(),
+                  child: LinearProgressIndicator(minHeight: 2),
                 ),
             ],
           );
