@@ -199,7 +199,7 @@ class DataUsageService {
       }
       File('win_debug.log').writeAsStringSync('Channel returned: ${(activeApps as Map?)?.length} apps.\n', mode: FileMode.append);
       
-      if (activeApps == null || (activeApps as Map).isEmpty) return;
+      if (activeApps == null || activeApps.isEmpty) return;
 
       final currentStats = await _getCurrentDesktopStats();
       final prefs = await SharedPreferences.getInstance();
