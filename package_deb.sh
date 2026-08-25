@@ -3,7 +3,7 @@
 # Configuration
 APP_NAME="nettrack"
 BUNDLE_APP_EXECUTABLE="net_track"
-VERSION="1.0.5"
+VERSION="1.1.0"
 ARCH="amd64"
 DEB_NAME="${APP_NAME}_${VERSION}_${ARCH}"
 

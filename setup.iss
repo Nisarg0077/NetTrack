@@ -1,7 +1,7 @@
 [Setup]
 AppId={{2A8E1D9F-7B3C-4E2F-A5C8-1D9F7B3C4E2F}
 AppName=NetTrack
-AppVersion=1.0.5
+AppVersion=1.1.0
 AppPublisher=NetTrack
 DefaultDirName={autopf}\NetTrack
 DisableProgramGroupPage=yes
