@@ -1,34 +1,37 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:launch_at_startup/launch_at_startup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/app_shell.dart';
+import 'services/windows_startup_service.dart';
 import 'services/background_service.dart';
 import 'services/system_tray_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Set transparent system bar on Android
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+    ),
+  );
+  
   if (Platform.isWindows) {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    bool isMsix = Platform.resolvedExecutable.contains('WindowsApps');
-    launchAtStartup.setup(
-      appName: packageInfo.appName,
-      appPath: Platform.resolvedExecutable,
-      packageName: isMsix ? 'Nisarg0077.NetTrack' : null,
-    );
+    await WindowsStartupService.init();
     
     // Set to true by default on first launch
     final prefs = await SharedPreferences.getInstance();
     bool hasSetStartup = prefs.getBool('has_set_startup') ?? false;
     if (!hasSetStartup) {
       try {
-        await launchAtStartup.enable();
+        await WindowsStartupService.enable();
       } catch (e) {
         debugPrint('Failed to set startup task: $e');
       }
@@ -56,55 +59,167 @@ class NetTrackApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-        return MaterialApp(
-          title: 'NetTrack',
-          debugShowCheckedModeBanner: false,
-          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF4F46E5), // Indigo 600
+        final isDark = themeProvider.isDarkMode;
+
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            systemNavigationBarColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
+            systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            systemNavigationBarContrastEnforced: false,
+          ),
+          child: MaterialApp(
+            title: 'NetTrack',
+            debugShowCheckedModeBanner: false,
+            themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+            theme: ThemeData(
+              useMaterial3: true,
               brightness: Brightness.light,
-              surface: const Color(0xFFF8FAFC), // Slate 50
+              colorScheme: const ColorScheme.light(
+                primary: Color(0xFF007AFF), // Apple System Blue
+                onPrimary: Colors.white,
+                secondary: Color(0xFF5856D6), // Apple System Purple / Indigo
+                onSecondary: Colors.white,
+                surface: Color(0xFFFFFFFF),
+                onSurface: Color(0xFF1C1C1E),
+                surfaceContainerHighest: Color(0xFFE5E5EA),
+                error: Color(0xFFFF3B30), // Apple System Red
+                onError: Colors.white,
+              ),
+              scaffoldBackgroundColor: const Color(0xFFF2F2F7), // Apple System Grouped Background
+              splashFactory: NoSplash.splashFactory,
+              highlightColor: Colors.transparent,
+              hoverColor: const Color(0x0A000000),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                systemOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: Brightness.dark,
+                  statusBarBrightness: Brightness.light,
+                  systemNavigationBarColor: Colors.transparent,
+                  systemNavigationBarIconBrightness: Brightness.dark,
+                ),
+              ),
+              cupertinoOverrideTheme: const CupertinoThemeData(
+                brightness: Brightness.light,
+                primaryColor: Color(0xFF007AFF),
+                barBackgroundColor: Color(0xCCF2F2F7),
+                scaffoldBackgroundColor: Color(0xFFF2F2F7),
+                textTheme: CupertinoTextThemeData(
+                  primaryColor: Color(0xFF1C1C1E),
+                  textStyle: TextStyle(color: Color(0xFF1C1C1E)),
+                ),
+              ),
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+                },
+              ),
+              cardTheme: CardThemeData(
+                color: Colors.white,
+                elevation: 0,
+                margin: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: const BorderSide(color: Color(0x14000000), width: 0.8),
+                ),
+              ),
+              dividerTheme: const DividerThemeData(
+                color: Color(0xFFE5E5EA),
+                thickness: 0.8,
+                space: 1,
+              ),
+              textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme).copyWith(
+                headlineLarge: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.5, color: const Color(0xFF1C1C1E)),
+                headlineMedium: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.4, color: const Color(0xFF1C1C1E)),
+                titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.3, color: const Color(0xFF1C1C1E)),
+                titleMedium: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.2, color: const Color(0xFF1C1C1E)),
+                bodyLarge: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFF1C1C1E)),
+                bodyMedium: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFF3C3C43)),
+              ),
             ),
-            useMaterial3: true,
-            scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-            cardTheme: CardThemeData(
-              color: Colors.white,
-              elevation: 4,
-              shadowColor: Colors.black.withValues(alpha: 0.1),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            ),
-            listTileTheme: const ListTileThemeData(
-              tileColor: Colors.transparent,
-            ),
-
-            textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme),
-          ),
-          darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF818CF8), // Indigo 400
+            darkTheme: ThemeData(
+              useMaterial3: true,
               brightness: Brightness.dark,
-              surface: const Color(0xFF111827), // Gray 900
-              primary: const Color(0xFF818CF8), // Indigo 400
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xFF0A84FF), // Apple Dark System Blue
+                onPrimary: Colors.white,
+                secondary: Color(0xFF5E5CE6), // Apple Dark Indigo
+                onSecondary: Colors.white,
+                surface: Color(0xFF1C1C1E), // Apple System Gray 6 Dark
+                onSurface: Color(0xFFF2F2F7),
+                surfaceContainerHighest: Color(0xFF2C2C2E),
+                error: Color(0xFFFF453A),
+                onError: Colors.white,
+              ),
+              scaffoldBackgroundColor: const Color(0xFF000000), // Pure Apple Dark
+              splashFactory: NoSplash.splashFactory,
+              highlightColor: Colors.transparent,
+              hoverColor: const Color(0x14FFFFFF),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                systemOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: Brightness.light,
+                  statusBarBrightness: Brightness.dark,
+                  systemNavigationBarColor: Colors.transparent,
+                  systemNavigationBarIconBrightness: Brightness.light,
+                ),
+              ),
+              cupertinoOverrideTheme: const CupertinoThemeData(
+                brightness: Brightness.dark,
+                primaryColor: Color(0xFF0A84FF),
+                barBackgroundColor: Color(0xCC1C1C1E),
+                scaffoldBackgroundColor: Color(0xFF000000),
+                textTheme: CupertinoTextThemeData(
+                  primaryColor: Colors.white,
+                  textStyle: TextStyle(color: Colors.white),
+                ),
+              ),
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+                },
+              ),
+              cardTheme: CardThemeData(
+                color: const Color(0xFF1C1C1E),
+                elevation: 0,
+                margin: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: const BorderSide(color: Color(0x1FFFFFFF), width: 0.8),
+                ),
+              ),
+              dividerTheme: const DividerThemeData(
+                color: Color(0xFF2C2C2E),
+                thickness: 0.8,
+                space: 1,
+              ),
+              textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
+                headlineLarge: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.5, color: Colors.white),
+                headlineMedium: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.4, color: Colors.white),
+                titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.3, color: Colors.white),
+                titleMedium: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.2, color: Colors.white),
+                bodyLarge: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFFE5E5EA)),
+                bodyMedium: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFFD1D1D6)),
+              ),
             ),
-            useMaterial3: true,
-            scaffoldBackgroundColor: const Color(0xFF111827),
-            listTileTheme: const ListTileThemeData(
-              tileColor: Colors.transparent,
-            ),
-            cardTheme: CardThemeData(
-              color: const Color(0xFF1F2937), // Gray 800
-              elevation: 8,
-              shadowColor: Colors.black.withValues(alpha: 0.4),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            ),
-
-            textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).apply(
-              bodyColor: Colors.white,
-              displayColor: Colors.white,
-            ),
+            home: const AppShell(),
           ),
-          home: const AppShell(),
         );
       },
     );

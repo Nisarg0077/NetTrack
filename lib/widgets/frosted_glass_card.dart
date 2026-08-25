@@ -15,9 +15,9 @@ class FrostedGlassCard extends StatelessWidget {
   const FrostedGlassCard({
     super.key,
     required this.child,
-    this.borderRadius = 28.0,
-    this.padding = const EdgeInsets.all(24.0),
-    this.blur = 24.0,
+    this.borderRadius = 22.0,
+    this.padding = const EdgeInsets.all(20.0),
+    this.blur = 20.0,
     this.color,
     this.border,
     this.boxShadow,
@@ -31,23 +31,21 @@ class FrostedGlassCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     
     final defaultColor = isDark 
-        ? Colors.white.withValues(alpha: 0.05) 
-        : Colors.white.withValues(alpha: 0.7);
+        ? const Color(0xB31C1C1E) // 70% Apple dark glass
+        : const Color(0xD9FFFFFF); // 85% Apple light glass
 
     final defaultBorder = Border.all(
       color: isDark 
-          ? Colors.white.withValues(alpha: 0.1) 
-          : Colors.white.withValues(alpha: 0.8),
-      width: 1,
+          ? const Color(0x2EFFFFFF) 
+          : const Color(0x1A000000),
+      width: 0.8,
     );
 
     final defaultShadow = [
       BoxShadow(
-        color: isDark 
-            ? Colors.black.withValues(alpha: 0.2) 
-            : theme.colorScheme.primary.withValues(alpha: 0.08),
-        blurRadius: 32,
-        offset: const Offset(0, 12),
+        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+        blurRadius: 20,
+        offset: const Offset(0, 6),
       )
     ];
 
@@ -78,7 +76,7 @@ class FrostedGlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: border ?? defaultBorder,
       ),
-      child: child,
+      child: RepaintBoundary(child: child),
     );
   }
 }
