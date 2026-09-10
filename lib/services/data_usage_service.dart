@@ -129,6 +129,31 @@ class DataUsageService {
     return [];
   }
 
+  /// Ultra lightweight method to get total raw bytes for a specific period (Android)
+  Future<int> getDailyTotalUsageBytes(DateTime startDate, DateTime endDate) async {
+    if (!Platform.isAndroid) {
+      double mb = await _getWindowsDailyTotalUsageMb(startDate, endDate);
+      return (mb * 1024 * 1024).toInt();
+    }
+    
+    try {
+      List<NetworkInfo> stats = await UsageStats.queryNetworkUsageStats(
+        startDate,
+        endDate,
+        networkType: NetworkType.all,
+      );
+      int totalBytes = 0;
+      for (var stat in stats) {
+        final rx = stat.rxTotalBytesValue ?? 0;
+        final tx = stat.txTotalBytesValue ?? 0;
+        totalBytes += (rx + tx);
+      }
+      return totalBytes;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   /// Lightweight method to get total data usage for a specific period (Android)
   Future<double> getDailyTotalUsageMb(DateTime startDate, DateTime endDate) async {
     if (!Platform.isAndroid) return await _getWindowsDailyTotalUsageMb(startDate, endDate);
@@ -143,17 +168,8 @@ class DataUsageService {
     }
 
     try {
-      List<NetworkInfo> stats = await UsageStats.queryNetworkUsageStats(
-        startDate,
-        endDate,
-        networkType: NetworkType.all,
-      );
-      double totalMb = 0;
-      for (var stat in stats) {
-        final rx = stat.rxTotalBytesValue ?? 0;
-        final tx = stat.txTotalBytesValue ?? 0;
-        totalMb += (rx + tx) / (1024 * 1024);
-      }
+      int totalBytes = await getDailyTotalUsageBytes(startDate, endDate);
+      double totalMb = totalBytes / (1024 * 1024);
       
       if (isFullDay && isPast) {
         _dailyCacheMb[cacheKey] = totalMb;

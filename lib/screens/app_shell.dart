@@ -22,12 +22,20 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    DashboardScreen(),
-    AppsListScreen(),
-    ReportScreen(),
-    SettingsScreen(),
+  late final FocusNode _searchFocusNode = FocusNode();
+
+  late final List<Widget> _screens = [
+    const DashboardScreen(),
+    AppsListScreen(searchFocusNode: _searchFocusNode),
+    const ReportScreen(),
+    const SettingsScreen(),
   ];
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -64,12 +72,12 @@ class _AppShellState extends State<AppShell> {
         final isDesktop = constraints.maxWidth >= 768;
 
         if (isDesktop) {
-          // macOS Sequoia Desktop / Tablet Layout
+          // Desktop / Tablet Layout
           return Scaffold(
             backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
             body: Row(
               children: [
-                _buildMacOSSidebar(context, isDark, provider),
+                _buildDesktopSidebar(context, isDark, provider),
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -98,7 +106,7 @@ class _AppShellState extends State<AppShell> {
             ),
           );
         } else {
-          // iOS 26 Mobile Edge-to-Edge Layout with Liquid Glass Floating Capsule + Quick Search Island
+          // Mobile Edge-to-Edge Layout with Floating Capsule + Quick Search Island
           return Scaffold(
             extendBody: true,
             backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
@@ -119,7 +127,7 @@ class _AppShellState extends State<AppShell> {
                     child: _screens[_currentIndex],
                   ),
                 ),
-                // iOS 26 Bottom Scroll Edge Fade Effect
+                // Bottom Scroll Edge Fade Effect
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -145,7 +153,7 @@ class _AppShellState extends State<AppShell> {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: _buildAppleFloatingPill(context, isDark),
+                  child: _buildFloatingPill(context, isDark),
                 ),
               ],
             ),
@@ -156,8 +164,8 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  // --- Apple iOS 26 Floating Capsule + Quick Search Island ---
-  Widget _buildAppleFloatingPill(BuildContext context, bool isDark) {
+  // --- Floating Capsule + Quick Search Island ---
+  Widget _buildFloatingPill(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
@@ -281,12 +289,16 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // iOS 26 Quick Search Island (Circular Action Bubble)
+                  // Quick Search Island (Circular Action Bubble)
                   GestureDetector(
                     onTap: () {
                       if (_currentIndex != 1) {
                         setState(() => _currentIndex = 1);
                       }
+                      // Focus the search bar after a tiny delay to ensure screen is active
+                      Future.delayed(const Duration(milliseconds: 50), () {
+                        _searchFocusNode.requestFocus();
+                      });
                     },
                     child: Container(
                       width: 64,
@@ -387,8 +399,8 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  // --- macOS Sequoia Style Desktop Sidebar ---
-  Widget _buildMacOSSidebar(BuildContext context, bool isDark, DataProvider provider) {
+  // --- Desktop Sidebar ---
+  Widget _buildDesktopSidebar(BuildContext context, bool isDark, DataProvider provider) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 

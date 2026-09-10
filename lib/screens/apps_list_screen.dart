@@ -6,7 +6,9 @@ import '../providers/data_provider.dart';
 import '../widgets/app_usage_tile.dart';
 
 class AppsListScreen extends StatefulWidget {
-  const AppsListScreen({super.key});
+  final FocusNode? searchFocusNode;
+
+  const AppsListScreen({super.key, this.searchFocusNode});
 
   @override
   State<AppsListScreen> createState() => _AppsListScreenState();
@@ -116,6 +118,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                           ),
                         ),
                         child: CupertinoSearchTextField(
+                          focusNode: widget.searchFocusNode,
                           placeholder: 'Search installed apps...',
                           backgroundColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),

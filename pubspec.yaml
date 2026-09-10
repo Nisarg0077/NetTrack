@@ -58,6 +58,11 @@ dependencies:
   http: any
   url_launcher: any
   launch_at_startup: any
+  traffic_stats: ^0.0.2
+  network_info_plus: ^7.0.0
+  network_usage_monitor: ^0.0.1
+  native_traffic:
+    path: packages/native_traffic
 dev_dependencies:
   flutter_test:
     sdk: flutter

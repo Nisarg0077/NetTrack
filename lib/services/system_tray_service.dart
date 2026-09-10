@@ -68,19 +68,24 @@ class SystemTrayService with TrayListener, WindowListener {
     await trayManager.setContextMenu(menu);
   }
 
-  String _formatShort(String usage) {
-      if (usage.contains('GB')) {
-          final val = double.tryParse(usage.split(' ')[0]) ?? 0;
-          return '${val.toStringAsFixed(1)}G';
-      } else if (usage.contains('MB')) {
-          final val = double.tryParse(usage.split(' ')[0]) ?? 0;
-          if (val >= 100) return '${val.toStringAsFixed(0)}M';
-          return '${val.toStringAsFixed(1)}M';
-      } else if (usage.contains('KB')) {
-          final val = double.tryParse(usage.split(' ')[0]) ?? 0;
-          return '${val.toStringAsFixed(0)}K';
+  String _getUltraShortUsage(String usage) {
+      final parts = usage.split(' ');
+      if (parts.length < 2) return usage;
+      
+      final val = double.tryParse(parts[0]) ?? 0;
+      final unit = parts[1];
+      
+      if (unit == 'GB') {
+          if (val >= 10) return '${val.toStringAsFixed(0)}G'; // 11G (3 chars)
+          return '${val.toStringAsFixed(1)}G'; // 9.2G (4 chars)
+      } else if (unit == 'MB') {
+          if (val >= 1000) return '${(val/1024).toStringAsFixed(1)}G';
+          return '${val.toStringAsFixed(0)}M'; // 450M (4 chars)
+      } else if (unit == 'KB') {
+          if (val >= 1000) return '${(val/1024).toStringAsFixed(0)}M';
+          return '${val.toStringAsFixed(0)}K'; // 900K (4 chars)
       }
-      return usage.split(' ')[0];
+      return '${val.toStringAsFixed(0)}B'; // 0B (2 chars)
   }
 
   Future<void> updateTrayUsage(String usageText) async {
@@ -95,41 +100,60 @@ class SystemTrayService with TrayListener, WindowListener {
     
     // Dynamically generate high quality icon using Flutter Canvas
     try {
-        final shortText = _formatShort(usageText);
+        final shortText = _getUltraShortUsage(usageText);
         
         final recorder = ui.PictureRecorder();
         final canvas = ui.Canvas(recorder);
+        // We use 128x128 but draw text to fill horizontally as much as possible
         const size = Size(128, 128);
         
-        double fSize = 110;
-        if (shortText.length > 2) fSize = 85;
-        if (shortText.length > 3) fSize = 65;
-        if (shortText.length > 4) fSize = 50;
+        // Dynamically find best font size to fill max width of 124
+        double fSize = 120;
+        late TextPainter textPainter;
+        while(true) {
+            textPainter = TextPainter(
+                text: TextSpan(
+                    text: shortText,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fSize,
+                        // Avoid w900 (Black) as it fills in holes in numbers when scaled down
+                        fontWeight: FontWeight.w700, 
+                        height: 1.0,
+                    ),
+                ),
+                textDirection: TextDirection.ltr,
+            );
+            textPainter.layout();
+            if (textPainter.width <= 124 || fSize <= 20) break;
+            fSize -= 2;
+        }
 
-        // Draw text with antialiasing
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: shortText,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: fSize,
-              fontWeight: FontWeight.w900,
-              height: 1.0,
-              shadows: const [
-                Shadow(offset: Offset(0, 2), blurRadius: 8.0, color: Colors.black87),
-                Shadow(offset: Offset(2, 2), blurRadius: 4.0, color: Colors.black54),
-                Shadow(offset: Offset(-1, -1), blurRadius: 2.0, color: Colors.black54),
-              ],
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        );
-        textPainter.layout();
-        
         final textOffset = Offset(
-          (size.width - textPainter.width) / 2,
-          (size.height - textPainter.height) / 2,
+            (size.width - textPainter.width) / 2,
+            (size.height - textPainter.height) / 2,
         );
+
+        // Draw a crisp black outline (stroke) instead of a blurry shadow
+        final strokePainter = TextPainter(
+            text: TextSpan(
+                text: shortText,
+                style: TextStyle(
+                    fontSize: fSize,
+                    fontWeight: FontWeight.w700,
+                    height: 1.0,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = fSize * 0.12 // Dynamic stroke width
+                      ..color = Colors.black,
+                ),
+            ),
+            textDirection: TextDirection.ltr,
+        );
+        strokePainter.layout();
+        
+        // Paint stroke then text on top
+        strokePainter.paint(canvas, textOffset);
         textPainter.paint(canvas, textOffset);
         
         final picture = recorder.endRecording();

@@ -75,6 +75,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   int _lastRxBytes = 0;
   int _lastTxBytes = 0;
   DateTime? _lastFetchTime;
+  
+  DateTime? _lastTrendFetchTime;
+  DateRange? _lastTrendRange;
 
   Timer? _refreshTimer;
   int _currentFetchId = 0;
@@ -140,7 +143,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     _lastFetchTime = null;
     _currentDownloadSpeed = 0;
     _currentUploadSpeed = 0;
-    fetchData();
+    fetchData(forceRefreshTrends: true);
   }
 
   void setCustomDate(DateTime date) {
@@ -151,7 +154,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     _lastFetchTime = null;
     _currentDownloadSpeed = 0;
     _currentUploadSpeed = 0;
-    fetchData();
+    fetchData(forceRefreshTrends: true);
   }
 
   void setCustomDateRange(DateTime start, DateTime end) {
@@ -162,7 +165,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     _lastFetchTime = null;
     _currentDownloadSpeed = 0;
     _currentUploadSpeed = 0;
-    fetchData();
+    fetchData(forceRefreshTrends: true);
   }
 
   void setErrorMessage(String? msg) {
@@ -178,7 +181,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchData({bool forceRefreshTrends = false}) async {
     final int fetchId = ++_currentFetchId;
     _isLoading = true;
     notifyListeners();
@@ -304,26 +307,36 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
       _isLoading = false;
       notifyListeners();
 
-      // Background loading for heavy stats
-      DateTime targetDay = _selectedDate ?? startDate;
-      final hourlyMb = await _dataUsageService.getHourlyUsageForDay(targetDay);
-      if (fetchId != _currentFetchId) return; // Stale fetch
-      
-      _peakHour = _dataUsageService.getPeakHourIndex(hourlyMb);
-      _dailyTrend = hourlyMb;
+      bool shouldFetchTrends = forceRefreshTrends || 
+                               _lastTrendFetchTime == null || 
+                               _lastTrendRange != _selectedRange || 
+                               now.difference(_lastTrendFetchTime!).inMinutes >= 5;
 
-      // Fetch weekly trend sequentially to avoid saturating Android IPC Binder
-      List<double> trend = [];
-      for (int i = 6; i >= 0; i--) {
-        DateTime dayStart = DateTime(endDate.year, endDate.month, endDate.day - i);
-        DateTime dayEnd = dayStart.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
-        trend.add(await _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd));
-        if (fetchId != _currentFetchId) return; // Stale fetch during loop
+      if (shouldFetchTrends) {
+        // Background loading for heavy stats
+        DateTime targetDay = _selectedDate ?? startDate;
+        final hourlyMb = await _dataUsageService.getHourlyUsageForDay(targetDay);
+        if (fetchId != _currentFetchId) return; // Stale fetch
+        
+        _peakHour = _dataUsageService.getPeakHourIndex(hourlyMb);
+        _dailyTrend = hourlyMb;
+
+        // Fetch weekly trend sequentially to avoid saturating Android IPC Binder
+        List<double> trend = [];
+        for (int i = 6; i >= 0; i--) {
+          DateTime dayStart = DateTime(endDate.year, endDate.month, endDate.day - i);
+          DateTime dayEnd = dayStart.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
+          trend.add(await _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd));
+          if (fetchId != _currentFetchId) return; // Stale fetch during loop
+        }
+        _weeklyTrend = trend;
+
+        // Fetch monthly trend in the background
+        _fetchMonthlyTrend(endDate, fetchId);
+        
+        _lastTrendFetchTime = now;
+        _lastTrendRange = _selectedRange;
       }
-      _weeklyTrend = trend;
-
-      // Fetch monthly trend in the background
-      _fetchMonthlyTrend(endDate, fetchId);
     } catch (e) {
       _errorMessage = "Failed to load usage data.";
     }

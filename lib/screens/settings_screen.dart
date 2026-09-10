@@ -5,11 +5,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/theme_provider.dart';
 import '../providers/data_provider.dart';
 import '../services/settings_service.dart';
 import '../services/update_service.dart';
-import '../services/windows_startup_service.dart';
+import '../services/desktop_startup_service.dart';
 import '../widgets/update_dialog.dart';
 import 'export_history_screen.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -51,8 +52,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _checkStartupState() async {
-    if (Platform.isWindows) {
-      bool isEnabled = await WindowsStartupService.isEnabled();
+    if (Platform.isWindows || Platform.isLinux) {
+      bool isEnabled = await DesktopStartupService.isEnabled();
       if (mounted) {
         setState(() {
           _runAtStartup = isEnabled;
@@ -146,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                         ),
                       ),
-                      if (Platform.isWindows)
+                      if (Platform.isWindows || Platform.isLinux)
                         CupertinoListTile(
                           leading: _buildLeadingIcon(
                             CupertinoIcons.power,
@@ -170,9 +171,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             onChanged: (bool value) async {
                               try {
                                 if (value) {
-                                  await WindowsStartupService.enable();
+                                  await DesktopStartupService.enable();
                                 } else {
-                                  await WindowsStartupService.disable();
+                                  await DesktopStartupService.disable();
                                 }
                                 if (!context.mounted) return;
                                 setState(() {
@@ -243,6 +244,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                         ),
                       ),
+                      if (Platform.isAndroid)
+                        CupertinoListTile(
+                          leading: _buildLeadingIcon(
+                            CupertinoIcons.battery_100,
+                            const Color(0xFFFF9500), // Orange
+                          ),
+                          title: Text(
+                            'Battery Optimization',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Allow background tracking',
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                            ),
+                          ),
+                          trailing: const Icon(CupertinoIcons.chevron_right, color: CupertinoColors.systemGrey, size: 16),
+                          onTap: () async {
+                            final status = await Permission.ignoreBatteryOptimizations.status;
+                            if (!status.isGranted) {
+                                final result = await Permission.ignoreBatteryOptimizations.request();
+                                if (result.isGranted && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Battery optimizations ignored!')),
+                                    );
+                                }
+                            } else {
+                                if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Battery optimizations are already ignored!')),
+                                    );
+                                }
+                            }
+                          },
+                        ),
                       CupertinoListTile(
                         leading: _buildLeadingIcon(
                           CupertinoIcons.lock_shield_fill,
@@ -451,7 +490,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          Platform.isWindows ? 'Windows Desktop (x64)' : (Platform.isAndroid ? 'Android OS' : 'macOS / iOS'),
+                          Platform.isWindows ? 'Windows Desktop (x64)' : (Platform.isAndroid ? 'Android OS' : (Platform.isLinux ? 'Linux OS' : 'macOS / iOS')),
                           style: TextStyle(
                             color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
                           ),
@@ -603,7 +642,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Crafted with Apple iOS & macOS Design System',
+                          'Crafted with Modern Design System',
                           style: TextStyle(
                             fontSize: 11,
                             color: isDark ? const Color(0xFF636366) : const Color(0xFFA1A1A6),

@@ -8,9 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/app_shell.dart';
-import 'services/windows_startup_service.dart';
+import 'services/desktop_startup_service.dart';
 import 'services/background_service.dart';
 import 'services/system_tray_service.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,19 +24,32 @@ void main() async {
     ),
   );
   
-  if (Platform.isWindows) {
-    await WindowsStartupService.init();
+  if (Platform.isWindows || Platform.isLinux) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(900, 700),
+      minimumSize: Size(800, 600),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+
+    await SystemTrayService().init();
+    await DesktopStartupService.init();
     
-    // Set to true by default on first launch
-    final prefs = await SharedPreferences.getInstance();
-    bool hasSetStartup = prefs.getBool('has_set_startup') ?? false;
-    if (!hasSetStartup) {
+    // Ensure it's enabled if user turned it on previously
+    bool isStartupEnabled = await DesktopStartupService.isEnabled();
+    if (isStartupEnabled) {
       try {
-        await WindowsStartupService.enable();
+        await DesktopStartupService.enable();
       } catch (e) {
         debugPrint('Failed to set startup task: $e');
       }
-      await prefs.setBool('has_set_startup', true);
     }
   }
 
