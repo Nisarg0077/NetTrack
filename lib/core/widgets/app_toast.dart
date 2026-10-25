@@ -6,21 +6,22 @@ import 'package:fusion_ui/fusion_ui.dart' as fusion;
 /// A modern, high-performance floating glass toast notification system.
 class AppToast {
   static OverlayEntry? _currentEntry;
-  static bool _isDismissing = false;
 
   /// Shows a success toast with an emerald badge icon.
   static void success(
     BuildContext context,
     String message, {
     String? subtitle,
+    IconData icon = CupertinoIcons.checkmark_circle_fill,
+    Color iconColor = const Color(0xFF34C759),
     Duration duration = const Duration(milliseconds: 2500),
   }) {
     show(
       context,
       message: message,
       subtitle: subtitle,
-      icon: CupertinoIcons.checkmark_circle_fill,
-      iconColor: const Color(0xFF34C759),
+      icon: icon,
+      iconColor: iconColor,
       duration: duration,
     );
   }
@@ -49,14 +50,16 @@ class AppToast {
     BuildContext context,
     String message, {
     String? subtitle,
+    IconData icon = CupertinoIcons.exclamationmark_triangle_fill,
+    Color iconColor = const Color(0xFFFF9500),
     Duration duration = const Duration(milliseconds: 2800),
   }) {
     show(
       context,
       message: message,
       subtitle: subtitle,
-      icon: CupertinoIcons.exclamationmark_triangle_fill,
-      iconColor: const Color(0xFFFF9500),
+      icon: icon,
+      iconColor: iconColor,
       duration: duration,
     );
   }
@@ -66,14 +69,16 @@ class AppToast {
     BuildContext context,
     String message, {
     String? subtitle,
+    IconData icon = CupertinoIcons.exclamationmark_circle_fill,
+    Color iconColor = const Color(0xFFFF3B30),
     Duration duration = const Duration(milliseconds: 3200),
   }) {
     show(
       context,
       message: message,
       subtitle: subtitle,
-      icon: CupertinoIcons.exclamationmark_circle_fill,
-      iconColor: const Color(0xFFFF3B30),
+      icon: icon,
+      iconColor: iconColor,
       duration: duration,
     );
   }
@@ -124,7 +129,7 @@ class AppToast {
 
     // Auto dismiss after specified duration
     Future.delayed(duration, () {
-      if (entry.mounted && _currentEntry == entry && !_isDismissing) {
+      if (entry.mounted && _currentEntry == entry) {
         animationKey.currentState?.dismiss();
       }
     });

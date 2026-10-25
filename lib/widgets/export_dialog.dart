@@ -291,11 +291,10 @@ class _ExportDialogState extends State<ExportDialog> {
           ),
         ),
       ),
-    ),
-  );
-},
+    );
+  },
 );
-}
+  }
 
   @override
   Widget build(BuildContext context) {
