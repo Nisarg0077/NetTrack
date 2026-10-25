@@ -9,6 +9,12 @@ class MockNativeTrafficPlatform
     implements NativeTrafficPlatform {
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
+
+  @override
+  Future<int?> getTotalRxBytes() => Future.value(1000);
+
+  @override
+  Future<int?> getTotalTxBytes() => Future.value(500);
 }
 
 void main() {

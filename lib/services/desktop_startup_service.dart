@@ -14,9 +14,10 @@ class DesktopStartupService {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final isMsix = Platform.resolvedExecutable.contains('WindowsApps');
-      
+
       launchAtStartup.setup(
-        appName: packageInfo.appName.isNotEmpty ? packageInfo.appName : 'NetTrack',
+        appName:
+            packageInfo.appName.isNotEmpty ? packageInfo.appName : 'NetTrack',
         appPath: Platform.resolvedExecutable,
         packageName: isMsix ? 'Nisarg0077.NetTrack' : null,
       );
@@ -27,13 +28,18 @@ class DesktopStartupService {
 
   /// Checks if NetTrack is configured to run at startup
   static Future<bool> isEnabled() async {
-    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) return false;
+    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
+      return false;
+    }
 
     // 1. Check Task Scheduler & Registry (Windows only)
     if (Platform.isWindows) {
       try {
-        final taskResult = await Process.run('schtasks', ['/query', '/tn', taskName]);
-        if (taskResult.exitCode == 0) return true;
+        final taskResult =
+            await Process.run('schtasks', ['/query', '/tn', taskName]);
+        if (taskResult.exitCode == 0) {
+          return true;
+        }
       } catch (_) {}
 
       try {
@@ -43,7 +49,9 @@ class DesktopStartupService {
           '/v',
           regKeyName,
         ]);
-        if (regResult.exitCode == 0) return true;
+        if (regResult.exitCode == 0) {
+          return true;
+        }
 
         final regFallback = await Process.run('reg', [
           'query',
@@ -51,11 +59,13 @@ class DesktopStartupService {
           '/v',
           'net_track',
         ]);
-        if (regFallback.exitCode == 0) return true;
+        if (regFallback.exitCode == 0) {
+          return true;
+        }
       } catch (_) {}
     }
 
-    // 2. Check launch_at_startup plugin (Handles Linux/MacOS natively)
+    // 2. Check launch_at_startup plugin (Handles desktop platforms natively)
     try {
       return await launchAtStartup.isEnabled();
     } catch (_) {
@@ -65,7 +75,9 @@ class DesktopStartupService {
 
   /// Enables startup via Task Scheduler/Registry (Windows) and Plugins
   static Future<bool> enable() async {
-    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) return false;
+    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
+      return false;
+    }
     final exePath = Platform.resolvedExecutable;
     bool success = false;
 
@@ -97,7 +109,9 @@ class DesktopStartupService {
             '/f',
           ]);
         }
-        if (result.exitCode == 0) success = true;
+        if (result.exitCode == 0) {
+          success = true;
+        }
       } catch (e) {
         debugPrint('Task Scheduler creation error: $e');
       }
@@ -115,13 +129,15 @@ class DesktopStartupService {
           '"$exePath"',
           '/f',
         ]);
-        if (regResult.exitCode == 0) success = true;
+        if (regResult.exitCode == 0) {
+          success = true;
+        }
       } catch (e) {
         debugPrint('Registry add error: $e');
       }
     }
 
-    // 3. Call launchAtStartup plugin for Linux / MacOS / MSIX compatibility
+    // 3. Call launchAtStartup plugin for desktop platform / MSIX compatibility
     try {
       await launchAtStartup.enable();
       success = true;
@@ -132,7 +148,9 @@ class DesktopStartupService {
 
   /// Disables startup across Task Scheduler, Registry, and Shortcuts
   static Future<bool> disable() async {
-    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) return false;
+    if (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS) {
+      return false;
+    }
 
     if (Platform.isWindows) {
       // 1. Delete Task Scheduler task

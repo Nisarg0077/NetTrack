@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.0+1
+version: 1.1.1+2
 
 environment:
   sdk: ^3.5.0
@@ -63,6 +63,9 @@ dependencies:
   network_usage_monitor: ^0.0.1
   native_traffic:
     path: packages/native_traffic
+  fusion_ui:
+    path: ../flutter_ui_framwork
+  liquid_glass_easy: ^4.3.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -88,9 +91,11 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/
+    
+  shaders:
+    - shaders/liquid_glass.frag
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -130,7 +135,7 @@ msix_config:
   display_name: NetTrack
   publisher_display_name: Nisarg0077
   identity_name: Nisarg0077.NetTrack
-  msix_version: 1.1.0.0
+  msix_version: 1.1.1.0
   logo_path: assets/icon.png
   store: false
   enable_at_startup: true

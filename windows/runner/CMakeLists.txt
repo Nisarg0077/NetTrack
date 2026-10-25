@@ -39,5 +39,5 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
 
-# Require administrator privileges
-set_target_properties(${BINARY_NAME} PROPERTIES LINK_FLAGS "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
+# UAC manifest is embedded via runner.exe.manifest (compiled through Runner.rc).
+# Removed /MANIFESTUAC linker flag — it invokes mt.exe which is not in PATH.

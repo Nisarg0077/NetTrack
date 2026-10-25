@@ -1,16 +1,21 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
+/// Modern Fusion Frosted Glass Card.
 class FrostedGlassCard extends StatelessWidget {
   final Widget child;
   final double borderRadius;
   final EdgeInsetsGeometry padding;
   final double blur;
   final Color? color;
-  final Border? border;
+  final BoxBorder? border;
   final List<BoxShadow>? boxShadow;
   final double? width;
   final double? height;
+  final double shaderIntensity; // Kept for compatibility
+  final double fluidViscosity; // Kept for compatibility
+  final bool interactive;
+  final VoidCallback? onTap;
 
   const FrostedGlassCard({
     super.key,
@@ -23,60 +28,44 @@ class FrostedGlassCard extends StatelessWidget {
     this.boxShadow,
     this.width,
     this.height,
+    this.shaderIntensity = 0.45,
+    this.fluidViscosity = 0.85,
+    this.interactive = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
-    final defaultColor = isDark 
-        ? const Color(0xB31C1C1E) // 70% Apple dark glass
-        : const Color(0xD9FFFFFF); // 85% Apple light glass
+    final r = BorderRadius.circular(borderRadius);
 
-    final defaultBorder = Border.all(
-      color: isDark 
-          ? const Color(0x2EFFFFFF) 
-          : const Color(0x1A000000),
-      width: 0.8,
-    );
+    if (interactive || onTap != null) {
+      return fusion.GlassCard(
+        width: width,
+        height: height,
+        padding: padding,
+        margin: EdgeInsets.zero,
+        borderRadius: r,
+        blur: blur,
+        tint: color,
+        interactive: interactive,
+        onTap: onTap,
+        useBackdropFilter: true,
+        showHighlight: true,
+        child: child,
+      );
+    }
 
-    final defaultShadow = [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-        blurRadius: 20,
-        offset: const Offset(0, 6),
-      )
-    ];
-
-    return Container(
+    return fusion.GlassSurface(
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: boxShadow ?? defaultShadow,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: blur > 0
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: _buildInnerContainer(defaultColor, defaultBorder),
-              )
-            : _buildInnerContainer(defaultColor, defaultBorder),
-      ),
-    );
-  }
-
-  Widget _buildInnerContainer(Color defaultColor, Border defaultBorder) {
-    return Container(
       padding: padding,
-      decoration: BoxDecoration(
-        color: color ?? defaultColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: border ?? defaultBorder,
-      ),
-      child: RepaintBoundary(child: child),
+      borderRadius: r,
+      blur: blur,
+      tint: color,
+      useBackdropFilter: true,
+      showHighlight: true,
+      child: child,
     );
   }
 }
+

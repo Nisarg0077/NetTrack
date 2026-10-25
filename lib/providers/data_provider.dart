@@ -6,7 +6,16 @@ import '../models/network_stats_model.dart';
 import '../services/data_usage_service.dart';
 import '../services/settings_service.dart';
 import '../services/system_tray_service.dart';
-enum DateRange { today, yesterday, twoDaysAgo, thisWeek, lastWeek, thisMonth, custom }
+
+enum DateRange {
+  today,
+  yesterday,
+  twoDaysAgo,
+  thisWeek,
+  lastWeek,
+  thisMonth,
+  custom
+}
 
 class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   final DataUsageService _dataUsageService = DataUsageService();
@@ -57,6 +66,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   bool _isUpdateAvailable = false;
   bool get isUpdateAvailable => _isUpdateAvailable;
 
+  bool _isCheckingUpdate = false;
+  bool get isCheckingUpdate => _isCheckingUpdate;
+
   String? _updateLatestVersion;
   String? get updateLatestVersion => _updateLatestVersion;
 
@@ -75,7 +87,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   int _lastRxBytes = 0;
   int _lastTxBytes = 0;
   DateTime? _lastFetchTime;
-  
+
   DateTime? _lastTrendFetchTime;
   DateRange? _lastTrendRange;
 
@@ -88,7 +100,7 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
 
   Future<void> _init() async {
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Load cached data
     _appUsages = await _settingsService.getCachedAppUsages();
     _networkStats = await _settingsService.getCachedNetworkStats();
@@ -110,7 +122,8 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> _checkPermissionOnResume() async {
-    final currentlyHasPermission = await _dataUsageService.checkUsagePermission();
+    final currentlyHasPermission =
+        await _dataUsageService.checkUsagePermission();
     if (currentlyHasPermission != _hasPermission) {
       _hasPermission = currentlyHasPermission;
       if (_hasPermission) {
@@ -173,7 +186,8 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
   }
 
-  void setUpdateAvailable(bool available, {String? version, String? notes, String? url}) {
+  void setUpdateAvailable(bool available,
+      {String? version, String? notes, String? url}) {
     _isUpdateAvailable = available;
     _updateLatestVersion = version;
     _updateReleaseNotes = notes;
@@ -181,10 +195,18 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
   }
 
+  void setCheckingUpdate(bool checking) {
+    _isCheckingUpdate = checking;
+    notifyListeners();
+  }
+
   Future<void> fetchData({bool forceRefreshTrends = false}) async {
     final int fetchId = ++_currentFetchId;
-    _isLoading = true;
-    notifyListeners();
+    final bool isInitialLoad = _appUsages.isEmpty && _networkStats.isEmpty;
+    if (isInitialLoad) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     DateTime endDate = DateTime.now();
     DateTime startDate;
@@ -196,12 +218,14 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
         break;
       case DateRange.yesterday:
         startDate = DateTime(endDate.year, endDate.month, endDate.day - 1);
-        endDate = DateTime(endDate.year, endDate.month, endDate.day).subtract(const Duration(milliseconds: 1));
+        endDate = DateTime(endDate.year, endDate.month, endDate.day)
+            .subtract(const Duration(milliseconds: 1));
         _selectedDate = startDate;
         break;
       case DateRange.twoDaysAgo:
         startDate = DateTime(endDate.year, endDate.month, endDate.day - 2);
-        endDate = DateTime(endDate.year, endDate.month, endDate.day - 1).subtract(const Duration(milliseconds: 1));
+        endDate = DateTime(endDate.year, endDate.month, endDate.day - 1)
+            .subtract(const Duration(milliseconds: 1));
         _selectedDate = startDate;
         break;
       case DateRange.thisWeek:
@@ -210,9 +234,13 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
         _selectedDate = null;
         break;
       case DateRange.lastWeek:
-        DateTime currentWeekStart = endDate.subtract(Duration(days: endDate.weekday - 1));
-        startDate = DateTime(currentWeekStart.year, currentWeekStart.month, currentWeekStart.day - 7);
-        endDate = DateTime(currentWeekStart.year, currentWeekStart.month, currentWeekStart.day).subtract(const Duration(milliseconds: 1));
+        DateTime currentWeekStart =
+            endDate.subtract(Duration(days: endDate.weekday - 1));
+        startDate = DateTime(currentWeekStart.year, currentWeekStart.month,
+            currentWeekStart.day - 7);
+        endDate = DateTime(currentWeekStart.year, currentWeekStart.month,
+                currentWeekStart.day)
+            .subtract(const Duration(milliseconds: 1));
         _selectedDate = null;
         break;
       case DateRange.thisMonth:
@@ -220,9 +248,12 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
         _selectedDate = null;
         break;
       case DateRange.custom:
-        startDate = _customStartDate ?? DateTime(endDate.year, endDate.month, endDate.day);
+        startDate = _customStartDate ??
+            DateTime(endDate.year, endDate.month, endDate.day);
         endDate = _customEndDate ?? endDate;
-        if (startDate.year == endDate.year && startDate.month == endDate.month && startDate.day == endDate.day) {
+        if (startDate.year == endDate.year &&
+            startDate.month == endDate.month &&
+            startDate.day == endDate.day) {
           _selectedDate = startDate;
         } else {
           _selectedDate = null;
@@ -231,73 +262,82 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     }
 
     try {
-      final newAppUsages = await _dataUsageService.getAppNetworkUsage(startDate, endDate);
+      final newAppUsages =
+          await _dataUsageService.getAppNetworkUsage(startDate, endDate);
       if (fetchId != _currentFetchId) return; // Stale fetch
 
-      final newNetworkStats = await _dataUsageService.getGeneralNetworkStats(startDate: startDate, endDate: endDate);
+      final newNetworkStats = await _dataUsageService.getGeneralNetworkStats(
+          startDate: startDate, endDate: endDate);
       if (fetchId != _currentFetchId) return; // Stale fetch
-      
+
       if (newAppUsages.isNotEmpty || newNetworkStats.isNotEmpty) {
-          _appUsages = newAppUsages;
-          _networkStats = newNetworkStats;
-          
-          _settingsService.saveCachedAppUsages(_appUsages); // Fire and forget
-          _settingsService.saveCachedNetworkStats(_networkStats);
+        _appUsages = newAppUsages;
+        _networkStats = newNetworkStats;
+
+        _settingsService.saveCachedAppUsages(_appUsages); // Fire and forget
+        _settingsService.saveCachedNetworkStats(_networkStats);
       }
 
-      _activeAppsCount = _appUsages.where((app) => (app.rxBytes + app.txBytes) > 0).length;
-      
+      _activeAppsCount =
+          _appUsages.where((app) => (app.rxBytes + app.txBytes) > 0).length;
+
       // Update system tray on Windows and Linux
       if (Platform.isWindows || Platform.isLinux) {
-         int totalRx = 0;
-         int totalTx = 0;
-         for (var stat in _networkStats) {
-             totalRx += stat.rxBytes;
-             totalTx += stat.txBytes;
-         }
-         final totalBytes = totalRx + totalTx;
-         
-         String formatBytes(int bytes) {
-            if (bytes < 1024) return '$bytes B';
-            if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-            if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
-            return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
-         }
-         
-         SystemTrayService().updateTrayUsage(formatBytes(totalBytes));
+        int totalRx = 0;
+        int totalTx = 0;
+        for (var stat in _networkStats) {
+          totalRx += stat.rxBytes;
+          totalTx += stat.txBytes;
+        }
+        final totalBytes = totalRx + totalTx;
+
+        String formatBytes(int bytes) {
+          if (bytes < 1024) {
+            return '$bytes B';
+          }
+          if (bytes < 1024 * 1024) {
+            return '${(bytes / 1024).toStringAsFixed(1)} KB';
+          }
+          if (bytes < 1024 * 1024 * 1024) {
+            return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+          }
+          return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+        }
+
+        SystemTrayService().updateTrayUsage(formatBytes(totalBytes));
       }
 
       // Calculate live speeds
       int totalRx = 0;
       int totalTx = 0;
       if (Platform.isWindows || Platform.isLinux) {
-         for (var stat in _networkStats) {
-             totalRx += stat.rxBytes;
-             totalTx += stat.txBytes;
-         }
+        for (var stat in _networkStats) {
+          totalRx += stat.rxBytes;
+          totalTx += stat.txBytes;
+        }
       } else {
-         for (var app in _appUsages) {
-             totalRx += app.rxBytes;
-             totalTx += app.txBytes;
-         }
+        for (var app in _appUsages) {
+          totalRx += app.rxBytes;
+          totalTx += app.txBytes;
+        }
       }
 
       final now = DateTime.now();
       if (_lastFetchTime != null && _selectedRange == DateRange.today) {
-          final diff = now.difference(_lastFetchTime!).inMilliseconds;
-          if (diff > 0) {
-              int deltaRx = totalRx - _lastRxBytes;
-              int deltaTx = totalTx - _lastTxBytes;
-              
-              if (deltaRx < 0) deltaRx = 0;
-              if (deltaTx < 0) deltaTx = 0;
+        final diff = now.difference(_lastFetchTime!).inMilliseconds;
+        if (diff > 0) {
+          int deltaRx = totalRx - _lastRxBytes;
+          int deltaTx = totalTx - _lastTxBytes;
 
-              _currentDownloadSpeed = (deltaRx / diff) * 1000;
-              _currentUploadSpeed = (deltaTx / diff) * 1000;
-          }
+          if (deltaRx < 0) deltaRx = 0;
+          if (deltaTx < 0) deltaTx = 0;
+
+          _currentDownloadSpeed = (deltaRx / diff) * 1000;
+          _currentUploadSpeed = (deltaTx / diff) * 1000;
+        }
       } else {
-          _currentDownloadSpeed = 0;
-          _currentUploadSpeed = 0;
+        _currentDownloadSpeed = 0;
+        _currentUploadSpeed = 0;
       }
       _lastRxBytes = totalRx;
       _lastTxBytes = totalTx;
@@ -307,43 +347,60 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
       _isLoading = false;
       notifyListeners();
 
-      bool shouldFetchTrends = forceRefreshTrends || 
-                               _lastTrendFetchTime == null || 
-                               _lastTrendRange != _selectedRange || 
-                               now.difference(_lastTrendFetchTime!).inMinutes >= 5;
+      bool shouldFetchTrends = forceRefreshTrends ||
+          _lastTrendFetchTime == null ||
+          _lastTrendRange != _selectedRange ||
+          now.difference(_lastTrendFetchTime!).inMinutes >= 5;
 
       if (shouldFetchTrends) {
-        // Background loading for heavy stats
-        DateTime targetDay = _selectedDate ?? startDate;
-        final hourlyMb = await _dataUsageService.getHourlyUsageForDay(targetDay);
-        if (fetchId != _currentFetchId) return; // Stale fetch
-        
-        _peakHour = _dataUsageService.getPeakHourIndex(hourlyMb);
-        _dailyTrend = hourlyMb;
-
-        // Fetch weekly trend sequentially to avoid saturating Android IPC Binder
-        List<double> trend = [];
-        for (int i = 6; i >= 0; i--) {
-          DateTime dayStart = DateTime(endDate.year, endDate.month, endDate.day - i);
-          DateTime dayEnd = dayStart.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
-          trend.add(await _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd));
-          if (fetchId != _currentFetchId) return; // Stale fetch during loop
-        }
-        _weeklyTrend = trend;
-
-        // Fetch monthly trend in the background
-        _fetchMonthlyTrend(endDate, fetchId);
-        
         _lastTrendFetchTime = now;
         _lastTrendRange = _selectedRange;
+        // Non-blocking asynchronous trend calculation so UI never hitches
+        _loadTrendsInBackground(startDate, endDate, fetchId);
       }
     } catch (e) {
       _errorMessage = "Failed to load usage data.";
+      if (fetchId == _currentFetchId) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
-    
-    if (fetchId == _currentFetchId) {
-      _isLoading = false;
-      notifyListeners();
+  }
+
+  Future<void> _loadTrendsInBackground(
+      DateTime startDate, DateTime endDate, int fetchId) async {
+    try {
+      DateTime targetDay = _selectedDate ?? startDate;
+      final hourlyMb = await _dataUsageService.getHourlyUsageForDay(targetDay);
+      if (fetchId != _currentFetchId) return;
+
+      _peakHour = _dataUsageService.getPeakHourIndex(hourlyMb);
+      _dailyTrend = hourlyMb;
+
+      // Efficient parallel fetching of 30-day historical window
+      final monthlyFutures = List.generate(30, (index) {
+        final int i = 29 - index;
+        final DateTime dayStart =
+            DateTime(endDate.year, endDate.month, endDate.day - i);
+        final DateTime dayEnd = dayStart
+            .add(const Duration(days: 1))
+            .subtract(const Duration(milliseconds: 1));
+        return _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd);
+      });
+
+      final monthly = await Future.wait(monthlyFutures);
+      if (fetchId != _currentFetchId) return;
+
+      _monthlyTrend = monthly;
+      // 7-day trend is derived directly from the last 7 entries of the 30-day window
+      _weeklyTrend =
+          monthly.length >= 7 ? monthly.sublist(monthly.length - 7) : monthly;
+
+      if (fetchId == _currentFetchId) {
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error loading trends in background: $e");
     }
   }
 
@@ -369,17 +426,5 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _refreshTimer?.cancel();
     super.dispose();
-  }
-
-  Future<void> _fetchMonthlyTrend(DateTime endDate, int fetchId) async {
-    List<double> trend = [];
-    for (int i = 29; i >= 0; i--) {
-      DateTime dayStart = DateTime(endDate.year, endDate.month, endDate.day - i);
-      DateTime dayEnd = dayStart.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
-      trend.add(await _dataUsageService.getDailyTotalUsageMb(dayStart, dayEnd));
-      if (fetchId != _currentFetchId) return; // Stale fetch
-    }
-    _monthlyTrend = trend;
-    notifyListeners();
   }
 }
