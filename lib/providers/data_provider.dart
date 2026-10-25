@@ -66,6 +66,9 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
   bool _isUpdateAvailable = false;
   bool get isUpdateAvailable => _isUpdateAvailable;
 
+  bool _isCheckingUpdate = false;
+  bool get isCheckingUpdate => _isCheckingUpdate;
+
   String? _updateLatestVersion;
   String? get updateLatestVersion => _updateLatestVersion;
 
@@ -189,6 +192,11 @@ class DataProvider with ChangeNotifier, WidgetsBindingObserver {
     _updateLatestVersion = version;
     _updateReleaseNotes = notes;
     _updateReleaseUrl = url;
+    notifyListeners();
+  }
+
+  void setCheckingUpdate(bool checking) {
+    _isCheckingUpdate = checking;
     notifyListeners();
   }
 

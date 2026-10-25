@@ -25,22 +25,35 @@ class AdaptiveNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isDesktop =
-            PlatformService.isDesktop || constraints.maxWidth >= 768;
-        if (isDesktop) {
-          // Desktop Workstation: Permanent Workstation Sidebar (compact only on narrow windows)
-          final bool isCompact = constraints.maxWidth < 860;
+        final bool isDesktop = PlatformService.isDesktop;
+        final bool isLandscapeMobile = !isDesktop &&
+            constraints.maxWidth > constraints.maxHeight &&
+            constraints.maxHeight < 550;
+        final bool isTablet = !isDesktop &&
+            constraints.maxWidth >= 768 &&
+            constraints.maxHeight >= 550;
+
+        final bool showSidebar = isDesktop || isLandscapeMobile || isTablet;
+
+        if (showSidebar) {
+          // Compact rail for landscape mobile or narrow desktop/tablet (< 860)
+          final bool isCompact =
+              isLandscapeMobile || constraints.maxWidth < 860;
           return Scaffold(
             backgroundColor: Colors.transparent,
             body: Row(
               children: [
-                _buildSidebar(context, isCompact: isCompact),
+                _buildSidebar(
+                  context,
+                  isCompact: isCompact,
+                  isLandscapeMobile: isLandscapeMobile,
+                ),
                 Expanded(child: child),
               ],
             ),
           );
         } else {
-          // Mobile: Floating Stadium Dock Navigation
+          // Mobile Portrait: Floating Stadium Dock Navigation
           return Scaffold(
             backgroundColor: Colors.transparent,
             body: child,
@@ -52,7 +65,11 @@ class AdaptiveNavigation extends StatelessWidget {
     );
   }
 
-  Widget _buildSidebar(BuildContext context, {required bool isCompact}) {
+  Widget _buildSidebar(
+    BuildContext context, {
+    required bool isCompact,
+    bool isLandscapeMobile = false,
+  }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
@@ -74,266 +91,341 @@ class AdaptiveNavigation extends StatelessWidget {
               width: 0.85,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Spacing (Clean workstation header)
-              SizedBox(height: isCompact ? 22 : 26),
+          child: LayoutBuilder(
+            builder: (context, sidebarConstraints) {
+              final double availableHeight = sidebarConstraints.maxHeight;
+              final bool canShowBottomCard =
+                  !isCompact && availableHeight >= 520;
+              final bool canShowHeaders =
+                  !isCompact && availableHeight >= 420;
 
-              // Branding (Station App Title)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isCompact ? 16 : 18, vertical: 6),
-                child: isCompact
-                    ? Center(
-                        child: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(CupertinoIcons.speedometer,
-                              color: Colors.white, size: 20),
-                        ),
-                      )
-                    : Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF007AFF)
-                                      .withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Spacing / Safe Area
+                  SizedBox(
+                    height: isLandscapeMobile
+                        ? 12
+                        : (isCompact ? 20 : 26),
+                  ),
+
+                  // Branding Header
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isCompact ? 16 : 18,
+                      vertical: isLandscapeMobile ? 2 : 6,
+                    ),
+                    child: isCompact
+                        ? Center(
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF007AFF)
+                                        .withValues(alpha: 0.35),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(CupertinoIcons.speedometer,
+                                  color: Colors.white, size: 20),
                             ),
-                            child: const Icon(CupertinoIcons.speedometer,
-                                color: Colors.white, size: 20),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          )
+                        : Row(
                             children: [
-                              Text(
-                                'NetTrack',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                  color: isDark
-                                      ? Colors.white
-                                      : const Color(0xFF1C1C1E),
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF007AFF),
+                                      Color(0xFF5856D6)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF007AFF)
+                                          .withValues(alpha: 0.35),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                                 ),
+                                child: const Icon(CupertinoIcons.speedometer,
+                                    color: Colors.white, size: 20),
                               ),
-                              const SizedBox(height: 2),
-                              Row(
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF34C759),
-                                      shape: BoxShape.circle,
+                                  Text(
+                                    'NetTrack',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.3,
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1C1C1E),
                                     ),
                                   ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    'Network Monitor',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark
-                                          ? const Color(0xFF8E8E93)
-                                          : const Color(0xFF6E6E73),
-                                    ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF34C759),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        'Network Monitor',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark
+                                              ? const Color(0xFF8E8E93)
+                                              : const Color(0xFF6E6E73),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-              ),
-              const SizedBox(height: 18),
-
-              // 3. Navigation Sections
-              if (!isCompact)
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, bottom: 8, top: 4),
-                  child: Text(
-                    'OVERVIEW',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                      color: isDark
-                          ? const Color(0xFF8E8E93)
-                          : const Color(0xFF8E8E93),
-                    ),
                   ),
-                ),
-              _buildSidebarItem(context, CupertinoIcons.gauge, 'Dashboard',
-                  NavigationTab.dashboard, isCompact),
-              const SizedBox(height: 2),
-              _buildSidebarItem(context, CupertinoIcons.square_grid_2x2_fill,
-                  'Applications', NavigationTab.apps, isCompact,
-                  showBadge: true),
 
-              if (!isCompact) ...[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, bottom: 8),
-                  child: Text(
-                    'ANALYTICS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                      color: isDark
-                          ? const Color(0xFF8E8E93)
-                          : const Color(0xFF8E8E93),
-                    ),
-                  ),
-                ),
-              ],
-              _buildSidebarItem(context, CupertinoIcons.chart_bar_alt_fill,
-                  'Detailed Reports', NavigationTab.reports, isCompact),
+                  SizedBox(height: isLandscapeMobile ? 8 : 16),
 
-              if (!isCompact) ...[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, bottom: 8),
-                  child: Text(
-                    'SYSTEM',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                      color: isDark
-                          ? const Color(0xFF8E8E93)
-                          : const Color(0xFF8E8E93),
-                    ),
-                  ),
-                ),
-              ],
-              _buildSidebarItem(context, CupertinoIcons.gear_alt_fill,
-                  'Settings', NavigationTab.settings, isCompact),
-
-              const Spacer(),
-
-              // 4. Bottom Network Inspector Card
-              if (!isCompact)
-                Padding(
-                  padding: const EdgeInsets.all(14.0),
-                  child: Consumer<DataProvider>(
-                      builder: (context, provider, child) {
-                    final activeInterface = provider.networkStats.isNotEmpty
-                        ? provider.networkStats.first.interfaceName
-                        : (Platform.isAndroid
-                            ? 'Cellular / Wi-Fi'
-                            : 'Active Adapter');
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF222226).withValues(alpha: 0.9)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.black.withValues(alpha: 0.06),
-                          width: 0.8,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withValues(alpha: isDark ? 0.25 : 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+                  // Middle Scrollable Section to completely prevent any RenderFlex overflow
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: primaryColor.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
+                          if (canShowHeaders)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 20, bottom: 8, top: 4),
+                              child: Text(
+                                'OVERVIEW',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                  color: isDark
+                                      ? const Color(0xFF8E8E93)
+                                      : const Color(0xFF8E8E93),
                                 ),
-                                child: Icon(CupertinoIcons.wifi,
-                                    color: primaryColor, size: 14),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                          _buildSidebarItem(
+                            context,
+                            icon: CupertinoIcons.gauge,
+                            activeIcon: CupertinoIcons.speedometer,
+                            label: 'Overview',
+                            tab: NavigationTab.dashboard,
+                            isCompact: isCompact,
+                          ),
+                          const SizedBox(height: 2),
+                          _buildSidebarItem(
+                            context,
+                            icon: CupertinoIcons.square_grid_2x2,
+                            activeIcon: CupertinoIcons.square_grid_2x2_fill,
+                            label: 'Applications',
+                            tab: NavigationTab.apps,
+                            isCompact: isCompact,
+                            showBadge: true,
+                          ),
+
+                          if (canShowHeaders) ...[
+                            const SizedBox(height: 16),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 20, bottom: 8),
+                              child: Text(
+                                'ANALYTICS',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                  color: isDark
+                                      ? const Color(0xFF8E8E93)
+                                      : const Color(0xFF8E8E93),
+                                ),
+                              ),
+                            ),
+                          ],
+                          _buildSidebarItem(
+                            context,
+                            icon: CupertinoIcons.chart_bar,
+                            activeIcon: CupertinoIcons.chart_bar_alt_fill,
+                            label: 'Reports',
+                            tab: NavigationTab.reports,
+                            isCompact: isCompact,
+                          ),
+
+                          if (canShowHeaders) ...[
+                            const SizedBox(height: 16),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 20, bottom: 8),
+                              child: Text(
+                                'SYSTEM',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                  color: isDark
+                                      ? const Color(0xFF8E8E93)
+                                      : const Color(0xFF8E8E93),
+                                ),
+                              ),
+                            ),
+                          ],
+                          _buildSidebarItem(
+                            context,
+                            icon: CupertinoIcons.gear,
+                            activeIcon: CupertinoIcons.gear_alt_fill,
+                            label: 'Settings',
+                            tab: NavigationTab.settings,
+                            isCompact: isCompact,
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Bottom Network Inspector Card (only when enough height)
+                  if (canShowBottomCard)
+                    Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Consumer<DataProvider>(
+                        builder: (context, provider, child) {
+                          final activeInterface = provider
+                                  .networkStats.isNotEmpty
+                              ? provider.networkStats.first.interfaceName
+                              : (Platform.isAndroid
+                                  ? 'Cellular / Wi-Fi'
+                                  : 'Active Adapter');
+                          return Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF222226)
+                                      .withValues(alpha: 0.9)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.black.withValues(alpha: 0.06),
+                                width: 0.8,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black
+                                      .withValues(alpha: isDark ? 0.25 : 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    Text(
-                                      activeInterface.isEmpty
-                                          ? 'Ethernet'
-                                          : activeInterface,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark
-                                            ? Colors.white
-                                            : const Color(0xFF1C1C1E),
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        color: primaryColor
+                                            .withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
                                       ),
+                                      child: Icon(CupertinoIcons.wifi,
+                                          color: primaryColor, size: 14),
                                     ),
-                                    Text(
-                                      'Online & Monitoring',
-                                      style: TextStyle(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w500,
-                                        color: isDark
-                                            ? const Color(0xFF8E8E93)
-                                            : const Color(0xFF6E6E73),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            activeInterface.isEmpty
+                                                ? 'Ethernet'
+                                                : activeInterface,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : const Color(0xFF1C1C1E),
+                                            ),
+                                          ),
+                                          Text(
+                                            'Online & Monitoring',
+                                            style: TextStyle(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w500,
+                                              color: isDark
+                                                  ? const Color(0xFF8E8E93)
+                                                  : const Color(0xFF6E6E73),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  }),
-                ),
-              if (isCompact) const SizedBox(height: 16),
-            ],
+                    ),
+                  if (isCompact) const SizedBox(height: 12),
+                ],
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSidebarItem(BuildContext context, IconData icon, String label,
-      NavigationTab tab, bool isCompact,
-      {bool showBadge = false}) {
+  Widget _buildSidebarItem(
+    BuildContext context, {
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required NavigationTab tab,
+    required bool isCompact,
+    bool showBadge = false,
+  }) {
     final isSelected = currentTab == tab;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -379,10 +471,12 @@ class AdaptiveNavigation extends StatelessWidget {
                   : null,
             ),
             child: isCompact
-                ? Icon(icon, color: iconColor, size: 20)
+                ? Icon(isSelected ? activeIcon : icon,
+                    color: iconColor, size: 20)
                 : Row(
                     children: [
-                      Icon(icon, color: iconColor, size: 18),
+                      Icon(isSelected ? activeIcon : icon,
+                          color: iconColor, size: 18),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -443,7 +537,7 @@ class AdaptiveNavigation extends StatelessWidget {
       onItemSelected: (index) => onTabSelected(NavigationTab.values[index]),
       items: [
         const GlassNavigationItem(
-          icon: CupertinoIcons.speedometer,
+          icon: CupertinoIcons.gauge,
           activeIcon: CupertinoIcons.speedometer,
           label: 'Overview',
         ),
@@ -454,12 +548,12 @@ class AdaptiveNavigation extends StatelessWidget {
           badgeCount: activeCount > 0 ? activeCount : null,
         ),
         const GlassNavigationItem(
-          icon: CupertinoIcons.chart_bar_alt_fill,
+          icon: CupertinoIcons.chart_bar,
           activeIcon: CupertinoIcons.chart_bar_alt_fill,
           label: 'Reports',
         ),
         const GlassNavigationItem(
-          icon: CupertinoIcons.gear_alt_fill,
+          icon: CupertinoIcons.gear,
           activeIcon: CupertinoIcons.gear_alt_fill,
           label: 'Settings',
         ),

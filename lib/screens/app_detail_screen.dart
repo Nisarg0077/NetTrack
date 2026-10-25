@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../models/app_usage_model.dart';
@@ -22,6 +21,7 @@ import '../core/widgets/ambient_background.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_radii.dart';
 import '../core/theme/app_spacing.dart';
+import '../core/theme/app_typography.dart';
 
 class AppDetailScreen extends StatefulWidget {
   final AppUsageModel appUsage;
@@ -369,7 +369,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
                 ),
                 child: Text(
                   'Total: ${FormatUtils.formatBytes(appTotal)}',
-                  style: GoogleFonts.jetBrainsMono(
+                  style: AppTypography.mono(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: primaryColor,
@@ -427,7 +427,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
               ),
               Text(
                 '$rxPercent% Down • $txPercent% Up',
-                style: GoogleFonts.jetBrainsMono(
+                style: AppTypography.mono(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: isDark
@@ -488,7 +488,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
                 AnimatedCounter(
                   value: widget.appUsage.rxBytes.toDouble(),
                   formatBuilder: (v) => FormatUtils.formatBytes(v.toInt()),
-                  style: GoogleFonts.jetBrainsMono(
+                  style: AppTypography.mono(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.3,
@@ -533,7 +533,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
                 AnimatedCounter(
                   value: widget.appUsage.txBytes.toDouble(),
                   formatBuilder: (v) => FormatUtils.formatBytes(v.toInt()),
-                  style: GoogleFonts.jetBrainsMono(
+                  style: AppTypography.mono(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.3,

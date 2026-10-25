@@ -15,6 +15,7 @@ import '../services/update_service.dart';
 import '../services/desktop_startup_service.dart';
 import '../widgets/update_dialog.dart';
 import 'export_history_screen.dart';
+import 'licenses_screen.dart';
 
 import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
@@ -125,10 +126,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   actions: [
                     FloatingActionPill(
-                      icon: isDark
-                          ? CupertinoIcons.sun_max_fill
-                          : CupertinoIcons.moon_fill,
-                      label: isDark ? 'Light' : 'Dark',
+                      icon: themeProvider.isSystemMode
+                          ? CupertinoIcons.circle_righthalf_fill
+                          : (isDark
+                              ? CupertinoIcons.sun_max_fill
+                              : CupertinoIcons.moon_fill),
+                      label: themeProvider.isSystemMode
+                          ? 'Auto'
+                          : (isDark ? 'Light' : 'Dark'),
                       onPressed: () => themeProvider.toggleTheme(),
                     ),
                   ],
@@ -239,14 +244,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             children: [
               _buildSettingsTile(
-                icon: CupertinoIcons.moon_fill,
-                iconColor: const Color(0xFF5856D6),
-                title: 'Dark Theme',
-                subtitle: 'Toggle dark/light interface',
-                trailing: FusionSwitch(
-                  value: themeProvider.isDarkMode,
-                  onChanged: (bool value) => themeProvider.toggleTheme(),
+                icon: themeProvider.isSystemMode
+                    ? CupertinoIcons.circle_righthalf_fill
+                    : (isDark
+                        ? CupertinoIcons.moon_fill
+                        : CupertinoIcons.sun_max_fill),
+                iconColor: themeProvider.isSystemMode
+                    ? const Color(0xFF007AFF)
+                    : (isDark
+                        ? const Color(0xFF5856D6)
+                        : const Color(0xFFFF9500)),
+                title: 'Theme Mode',
+                subtitle: switch (themeProvider.themeMode) {
+                  ThemeMode.system => 'System Default • Follows device appearance',
+                  ThemeMode.dark => 'Dark Theme • Permanent obsidian glass',
+                  ThemeMode.light => 'Light Theme • Crisp porcelain acrylic',
+                },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.white : Colors.black)
+                            .withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        switch (themeProvider.themeMode) {
+                          ThemeMode.system => 'System (Auto)',
+                          ThemeMode.dark => 'Dark',
+                          ThemeMode.light => 'Light',
+                        },
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? const Color(0xFF0A84FF)
+                              : const Color(0xFF007AFF),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(CupertinoIcons.chevron_right,
+                        size: 14, color: CupertinoColors.systemGrey),
+                  ],
                 ),
+                onTap: () => _showThemeModeDialog(context, themeProvider),
                 isDark: isDark,
               ),
               if (Platform.isWindows || Platform.isLinux) ...[
@@ -343,7 +388,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(height: 1, indent: 56),
               _buildSettingsTile(
-                icon: CupertinoIcons.sparkles,
+                icon: CupertinoIcons.slowmo,
                 iconColor: const Color(0xFFFF9500),
                 title: 'Reduce Motion',
                 subtitle: 'Pause heavy animations to save battery & CPU',
@@ -356,7 +401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       value
                           ? 'Reduce motion enabled'
                           : 'Reduce motion disabled',
-                      icon: CupertinoIcons.sparkles,
+                      icon: CupertinoIcons.slowmo,
                     );
                   },
                 ),
@@ -413,7 +458,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
               if (Platform.isAndroid) ...[
                 _buildSettingsTile(
-                  icon: CupertinoIcons.battery_100,
+                  icon: CupertinoIcons.battery_charging,
                   iconColor: const Color(0xFFFF9500),
                   title: 'Battery Optimization',
                   subtitle: 'Allow background tracking',
@@ -429,7 +474,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         AppToast.success(
                           context,
                           'Battery optimizations ignored',
-                          icon: CupertinoIcons.battery_100,
+                          icon: CupertinoIcons.battery_charging,
                         );
                       }
                     } else {
@@ -437,7 +482,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         AppToast.info(
                           context,
                           'Battery optimizations already ignored',
-                          icon: CupertinoIcons.battery_100,
+                          icon: CupertinoIcons.battery_charging,
                         );
                       }
                     }
@@ -518,16 +563,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Software Updates',
                 subtitle: dataProvider.isUpdateAvailable
                     ? 'Update ${dataProvider.updateLatestVersion} ready to install'
-                    : 'NetTrack is up to date',
-                trailing: const Icon(CupertinoIcons.chevron_right,
-                    size: 16, color: CupertinoColors.systemGrey),
+                    : (dataProvider.isCheckingUpdate
+                        ? 'Checking for latest release...'
+                        : 'NetTrack is up to date • Tap to check'),
+                trailing: dataProvider.isCheckingUpdate
+                    ? const CupertinoActivityIndicator(radius: 8)
+                    : (dataProvider.isUpdateAvailable
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF007AFF),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'v${dataProvider.updateLatestVersion}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          )
+                        : const Icon(CupertinoIcons.chevron_right,
+                            size: 16, color: CupertinoColors.systemGrey)),
                 onTap: () {
+                  if (dataProvider.isCheckingUpdate) return;
                   if (dataProvider.isUpdateAvailable &&
                       dataProvider.updateReleaseUrl != null) {
                     showDialog(
                       context: context,
                       builder: (context) => UpdateDialog(
                         latestVersion: dataProvider.updateLatestVersion ?? '',
+                        currentVersion: _packageInfo?.version,
                         releaseNotes: dataProvider.updateReleaseNotes ?? '',
                         releaseUrl: dataProvider.updateReleaseUrl ?? '',
                       ),
@@ -625,34 +693,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(height: 1, indent: 56),
               _buildSettingsTile(
-                icon: CupertinoIcons.doc_plaintext,
+                icon: CupertinoIcons.doc_text_search,
                 iconColor: const Color(0xFFFF9500),
                 title: 'Third-Party Licenses',
-                subtitle: 'Open source legal notices',
+                subtitle: 'Open source legal notices & copyright terms',
                 trailing: const Icon(CupertinoIcons.chevron_right,
                     size: 16, color: CupertinoColors.systemGrey),
                 onTap: () {
-                  showLicensePage(
-                    context: context,
-                    applicationName: 'NetTrack',
-                    applicationVersion: 'v${_packageInfo?.version ?? '1.0.4'}',
-                    applicationIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(CupertinoIcons.waveform_path_ecg,
-                            color: Colors.white, size: 28),
-                      ),
-                    ),
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                        builder: (context) => const LicensesScreen()),
                   );
                 },
                 isDark: isDark,
@@ -1085,6 +1136,246 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: CupertinoIcons.timer,
       );
     }
+  }
+
+  void _showThemeModeDialog(
+      BuildContext context, ThemeProvider themeProvider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    final modes = [
+      {
+        'mode': ThemeMode.system,
+        'title': 'System Default',
+        'subtitle': 'Automatically matches device system appearance',
+        'icon': CupertinoIcons.circle_righthalf_fill,
+        'color': const Color(0xFF007AFF),
+      },
+      {
+        'mode': ThemeMode.light,
+        'title': 'Light Theme',
+        'subtitle': 'Crisp porcelain acrylic with high-contrast elements',
+        'icon': CupertinoIcons.sun_max_fill,
+        'color': const Color(0xFFFF9500),
+      },
+      {
+        'mode': ThemeMode.dark,
+        'title': 'Dark Theme',
+        'subtitle': 'Deep obsidian glass with illuminated neon accents',
+        'icon': CupertinoIcons.moon_fill,
+        'color': const Color(0xFF5856D6),
+      },
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return Center(
+          child: SingleChildScrollView(
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: GlassSurface(
+                  borderRadius: BorderRadius.circular(26),
+                  blur: 28,
+                  elevation: 4,
+                  useBackdropFilter: true,
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF007AFF)
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(CupertinoIcons.circle_righthalf_fill,
+                              color: Colors.white, size: 26),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Theme Appearance',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
+                          color:
+                              isDark ? Colors.white : const Color(0xFF1C1C1E),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choose how NetTrack renders its interface',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: isDark
+                              ? const Color(0xFF8E8E93)
+                              : const Color(0xFF6E6E73),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      ...modes.map((opt) {
+                        final mode = opt['mode'] as ThemeMode;
+                        final isSelected = themeProvider.themeMode == mode;
+                        final Color optColor = opt['color'] as Color;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                themeProvider.setThemeMode(mode);
+                                Navigator.pop(dialogCtx);
+                                AppToast.success(
+                                  context,
+                                  'Theme set to ${opt['title']}',
+                                  icon: opt['icon'] as IconData,
+                                );
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? primaryColor.withValues(
+                                          alpha: isDark ? 0.18 : 0.1)
+                                      : (isDark
+                                          ? const Color(0xFF2C2C2E)
+                                              .withValues(alpha: 0.6)
+                                          : const Color(0xFFF2F2F7)),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? primaryColor
+                                        : (isDark
+                                            ? const Color(0x1AFFFFFF)
+                                            : const Color(0x14000000)),
+                                    width: isSelected ? 1.4 : 0.8,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            optColor.withValues(alpha: 0.15),
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        opt['icon'] as IconData,
+                                        color: optColor,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            opt['title'] as String,
+                                            style: TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w600,
+                                              color: isSelected
+                                                  ? (isDark
+                                                      ? const Color(0xFF0A84FF)
+                                                      : const Color(0xFF007AFF))
+                                                  : (isDark
+                                                      ? Colors.white
+                                                      : const Color(
+                                                          0xFF1C1C1E)),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            opt['subtitle'] as String,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: isDark
+                                                  ? const Color(0xFF8E8E93)
+                                                  : const Color(0xFF6E6E73),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(
+                                        CupertinoIcons
+                                            .checkmark_alt_circle_fill,
+                                        color: isDark
+                                            ? const Color(0xFF0A84FF)
+                                            : const Color(0xFF007AFF),
+                                        size: 20,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: CupertinoButton(
+                          color: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : const Color(0xFFE5E5EA),
+                          borderRadius: BorderRadius.circular(14),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1C1C1E),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showGraphicsTierDialog(

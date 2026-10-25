@@ -5,6 +5,7 @@ import 'animated_counter.dart';
 import '../core/widgets/glass_card.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
 
 class DailySummaryCard extends StatelessWidget {
   final int totalBytes;
@@ -120,9 +121,10 @@ class DailySummaryCard extends StatelessWidget {
             value: totalBytes.toDouble(),
             duration: const Duration(milliseconds: 700),
             formatBuilder: (value) => FormatUtils.formatBytes(value.toInt()),
-            style: theme.textTheme.headlineLarge?.copyWith(
+            style: AppTypography.mono(
+              fontSize: 28,
               fontWeight: FontWeight.w800,
-              letterSpacing: -1.5,
+              letterSpacing: -1.0,
               color: isDark ? Colors.white : Colors.black,
             ),
           ),
@@ -234,8 +236,12 @@ class DailySummaryCard extends StatelessWidget {
             duration: const Duration(milliseconds: 600),
             formatBuilder: (value) =>
                 FormatUtils.formatBytes(value.toInt(), decimals: 1),
-            style: const TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2),
+            style: AppTypography.mono(
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+              letterSpacing: -0.2,
+              color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+            ),
           ),
           const SizedBox(height: 2),
           Text(

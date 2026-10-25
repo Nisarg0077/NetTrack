@@ -9,7 +9,6 @@ import '../models/app_usage_model.dart';
 import '../widgets/app_usage_tile.dart';
 import '../utils/format_utils.dart';
 import 'app_detail_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // Design System
 import '../core/widgets/glass_card.dart';
@@ -17,6 +16,7 @@ import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
+import '../core/theme/app_typography.dart';
 import '../core/platform/platform_service.dart';
 import '../core/widgets/app_toast.dart';
 
@@ -261,25 +261,25 @@ class _AppsListScreenState extends State<AppsListScreen> {
                                       isDark, primaryColor, (idx) {
                                     _sortBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.arrow_up_arrow_down),
                                   const SizedBox(width: AppSpacing.xs),
-                                  _buildPillChip(1, '↓ Download', _sortBy == 1,
+                                  _buildPillChip(1, 'Download', _sortBy == 1,
                                       isDark, primaryColor, (idx) {
                                     _sortBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.arrow_down),
                                   const SizedBox(width: AppSpacing.xs),
-                                  _buildPillChip(2, '↑ Upload', _sortBy == 2,
+                                  _buildPillChip(2, 'Upload', _sortBy == 2,
                                       isDark, primaryColor, (idx) {
                                     _sortBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.arrow_up),
                                   const SizedBox(width: AppSpacing.xs),
                                   _buildPillChip(3, 'A-Z', _sortBy == 3, isDark,
                                       primaryColor, (idx) {
                                     _sortBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.textformat_abc),
                                   const SizedBox(width: AppSpacing.md),
                                   Container(
                                     width: 1,
@@ -293,19 +293,19 @@ class _AppsListScreenState extends State<AppsListScreen> {
                                       isDark, primaryColor, (idx) {
                                     _filterBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.square_grid_2x2),
                                   const SizedBox(width: AppSpacing.xs),
                                   _buildPillChip(1, 'User', _filterBy == 1,
                                       isDark, primaryColor, (idx) {
                                     _filterBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.person_fill),
                                   const SizedBox(width: AppSpacing.xs),
                                   _buildPillChip(2, 'System', _filterBy == 2,
                                       isDark, primaryColor, (idx) {
                                     _filterBy = idx;
                                     _onFilterSortChanged();
-                                  }),
+                                  }, icon: CupertinoIcons.gear),
                                 ],
                               ),
                             ),
@@ -344,8 +344,17 @@ class _AppsListScreenState extends State<AppsListScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.md, 0, AppSpacing.md, 110),
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    (!PlatformService.isDesktop &&
+                            MediaQuery.of(context).size.width >
+                                MediaQuery.of(context).size.height &&
+                            MediaQuery.of(context).size.height < 550)
+                        ? AppSpacing.xl
+                        : 110,
+                  ),
                   sliver: SliverList.separated(
                     itemCount: filteredApps.length,
                     separatorBuilder: (_, __) => Container(
@@ -413,22 +422,42 @@ class _AppsListScreenState extends State<AppsListScreen> {
     bool isSelected,
     bool isDark,
     Color primaryColor,
-    ValueChanged<int> onSelect,
-  ) {
+    ValueChanged<int> onSelect, {
+    IconData? icon,
+  }) {
     return FloatingPill(
       isSelected: isSelected,
       onTap: () => onSelect(index),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          letterSpacing: -0.2,
-          color: isSelected
-              ? Colors.white
-              : (isDark ? const Color(0xFFE5E5EA) : const Color(0xFF1C1C1E)),
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6.5),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              size: 13,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark
+                      ? const Color(0xFF8E8E93)
+                      : const Color(0xFF6E6E73)),
+            ),
+            const SizedBox(width: 5),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              letterSpacing: -0.2,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark
+                      ? const Color(0xFFE5E5EA)
+                      : const Color(0xFF1C1C1E)),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -642,7 +671,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                             app.packageName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.jetBrainsMono(
+                            style: AppTypography.mono(
                               fontSize: 11.5,
                               color: isDark
                                   ? const Color(0xFF8E8E93)
@@ -656,7 +685,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                           child: Text(
                             FormatUtils.formatBytes(app.rxBytes),
                             textAlign: TextAlign.right,
-                            style: GoogleFonts.jetBrainsMono(
+                            style: AppTypography.mono(
                               fontSize: 12,
                               color: isDark
                                   ? const Color(0xFFE4E4E7)
@@ -670,7 +699,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                           child: Text(
                             FormatUtils.formatBytes(app.txBytes),
                             textAlign: TextAlign.right,
-                            style: GoogleFonts.jetBrainsMono(
+                            style: AppTypography.mono(
                               fontSize: 12,
                               color: isDark
                                   ? const Color(0xFFE4E4E7)
@@ -705,7 +734,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                                 child: Text(
                                   '${(percent * 100).toStringAsFixed(1)}%',
                                   textAlign: TextAlign.right,
-                                  style: GoogleFonts.jetBrainsMono(
+                                  style: AppTypography.mono(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: isDark
@@ -723,7 +752,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                           child: Text(
                             FormatUtils.formatBytes(app.totalBytes),
                             textAlign: TextAlign.right,
-                            style: GoogleFonts.jetBrainsMono(
+                            style: AppTypography.mono(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: theme.colorScheme.primary,
@@ -769,7 +798,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                 ),
                 Text(
                   'Cumulative Traffic: ${FormatUtils.formatBytes(totalBytes)}',
-                  style: GoogleFonts.jetBrainsMono(
+                  style: AppTypography.mono(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: isDark

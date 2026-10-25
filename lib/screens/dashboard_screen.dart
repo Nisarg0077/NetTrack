@@ -11,12 +11,11 @@ import '../widgets/usage_chart.dart';
 import '../widgets/app_usage_tile.dart';
 import '../utils/format_utils.dart';
 import 'app_detail_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // Design System Primitives
 import '../core/widgets/glass_card.dart';
-import '../core/widgets/speed_indicator.dart';
 import '../core/theme/app_spacing.dart';
+import '../core/theme/app_typography.dart';
 import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
 import '../core/platform/platform_service.dart';
@@ -156,11 +155,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 return LayoutBuilder(
                   builder: (context, constraints) {
-                    final isDesktop = constraints.maxWidth >= 768;
+                    final isLandscapeMobile = !PlatformService.isDesktop &&
+                        constraints.maxWidth > constraints.maxHeight &&
+                        constraints.maxHeight < 550;
+                    final isDesktop = PlatformService.isDesktop ||
+                        (constraints.maxWidth >= 768 &&
+                            constraints.maxHeight >= 550);
+                    final double bottomPadding =
+                        (isDesktop || isLandscapeMobile)
+                            ? AppSpacing.xxl
+                            : 110;
 
                     return Padding(
-                      padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm,
-                          AppSpacing.lg, isDesktop ? AppSpacing.xxl : 110),
+                      padding: EdgeInsets.fromLTRB(
+                          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, bottomPadding),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -265,17 +273,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                           ] else ...[
                             // Mobile Adaptive Layout
-                            if (dataProvider.selectedRange ==
-                                DateRange.today) ...[
-                              SpeedIndicator(
-                                downloadSpeed:
-                                    dataProvider.currentDownloadSpeed,
-                                uploadSpeed: dataProvider.currentUploadSpeed,
-                                interfaceName: activeInterface,
-                                isConnected: true,
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                            ],
                             DailySummaryCard(
                               totalBytes: totalBytes,
                               txBytes: totalTx,
@@ -565,7 +562,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: isMono
-                      ? GoogleFonts.jetBrainsMono(
+                      ? AppTypography.mono(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color:
@@ -752,7 +749,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             Text(
                               FormatUtils.formatBytes(app.totalBytes),
-                              style: GoogleFonts.jetBrainsMono(
+                              style: AppTypography.mono(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                                 color: isDark
@@ -782,7 +779,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 const SizedBox(width: 6),
                                 Text(
                                   '${(percent * 100).toStringAsFixed(1)}%',
-                                  style: GoogleFonts.jetBrainsMono(
+                                  style: AppTypography.mono(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
                                     color: isDark

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/app_shell.dart';
@@ -12,6 +11,7 @@ import 'services/background_service.dart';
 import 'services/system_tray_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:fusion_ui/fusion_ui.dart';
+import 'core/theme/app_typography.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -111,7 +111,7 @@ class NetTrackApp extends StatelessWidget {
           child: MaterialApp(
             title: 'NetTrack',
             debugShowCheckedModeBanner: false,
-            themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+            themeMode: themeProvider.themeMode,
             theme: ThemeData(
               useMaterial3: true,
               extensions: [fusionLight],
@@ -143,14 +143,14 @@ class NetTrackApp extends StatelessWidget {
                   systemNavigationBarIconBrightness: Brightness.dark,
                 ),
               ),
-              cupertinoOverrideTheme: const CupertinoThemeData(
+              cupertinoOverrideTheme: CupertinoThemeData(
                 brightness: Brightness.light,
-                primaryColor: Color(0xFF007AFF),
-                barBackgroundColor: Color(0xCCF2F2F7),
-                scaffoldBackgroundColor: Color(0xFFF2F2F7),
+                primaryColor: const Color(0xFF007AFF),
+                barBackgroundColor: const Color(0xCCF2F2F7),
+                scaffoldBackgroundColor: const Color(0xFFF2F2F7),
                 textTheme: CupertinoTextThemeData(
-                  primaryColor: Color(0xFF1C1C1E),
-                  textStyle: TextStyle(color: Color(0xFF1C1C1E)),
+                  primaryColor: const Color(0xFF1C1C1E),
+                  textStyle: AppTypography.primary(color: const Color(0xFF1C1C1E)),
                 ),
               ),
               pageTransitionsTheme: const PageTransitionsTheme(
@@ -176,30 +176,7 @@ class NetTrackApp extends StatelessWidget {
                 thickness: 0.8,
                 space: 1,
               ),
-              textTheme:
-                  GoogleFonts.outfitTextTheme(ThemeData.light().textTheme)
-                      .copyWith(
-                headlineLarge: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    color: const Color(0xFF1C1C1E)),
-                headlineMedium: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.4,
-                    color: const Color(0xFF1C1C1E)),
-                titleLarge: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.3,
-                    color: const Color(0xFF1C1C1E)),
-                titleMedium: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
-                    color: const Color(0xFF1C1C1E)),
-                bodyLarge: GoogleFonts.outfit(
-                    letterSpacing: -0.1, color: const Color(0xFF1C1C1E)),
-                bodyMedium: GoogleFonts.outfit(
-                    letterSpacing: -0.1, color: const Color(0xFF3C3C43)),
-              ),
+              textTheme: AppTypography.lightTextTheme(ThemeData.light().textTheme),
             ),
             darkTheme: ThemeData(
               useMaterial3: true,
@@ -232,14 +209,14 @@ class NetTrackApp extends StatelessWidget {
                   systemNavigationBarIconBrightness: Brightness.light,
                 ),
               ),
-              cupertinoOverrideTheme: const CupertinoThemeData(
+              cupertinoOverrideTheme: CupertinoThemeData(
                 brightness: Brightness.dark,
-                primaryColor: Color(0xFF0A84FF),
-                barBackgroundColor: Color(0xCC1C1C1E),
-                scaffoldBackgroundColor: Color(0xFF010101),
+                primaryColor: const Color(0xFF0A84FF),
+                barBackgroundColor: const Color(0xCC1C1C1E),
+                scaffoldBackgroundColor: const Color(0xFF010101),
                 textTheme: CupertinoTextThemeData(
                   primaryColor: Colors.white,
-                  textStyle: TextStyle(color: Colors.white),
+                  textStyle: AppTypography.primary(color: Colors.white),
                 ),
               ),
               pageTransitionsTheme: const PageTransitionsTheme(
@@ -265,29 +242,7 @@ class NetTrackApp extends StatelessWidget {
                 thickness: 0.8,
                 space: 1,
               ),
-              textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme)
-                  .copyWith(
-                headlineLarge: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    color: Colors.white),
-                headlineMedium: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.4,
-                    color: Colors.white),
-                titleLarge: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.3,
-                    color: Colors.white),
-                titleMedium: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
-                    color: Colors.white),
-                bodyLarge: GoogleFonts.outfit(
-                    letterSpacing: -0.1, color: const Color(0xFFE5E5EA)),
-                bodyMedium: GoogleFonts.outfit(
-                    letterSpacing: -0.1, color: const Color(0xFFD1D1D6)),
-              ),
+              textTheme: AppTypography.darkTextTheme(ThemeData.dark().textTheme),
             ),
             builder: (context, child) {
               return FusionTheme(

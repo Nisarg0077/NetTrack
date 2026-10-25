@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/data_provider.dart';
@@ -17,6 +16,7 @@ import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
+import '../core/theme/app_typography.dart';
 import '../core/platform/platform_service.dart';
 import '../core/widgets/app_toast.dart';
 
@@ -232,14 +232,25 @@ class _ReportScreenState extends State<ReportScreen> {
                 child: SizedBox(height: 8),
               ),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    PlatformService.isDesktop ? AppSpacing.xl : AppSpacing.md,
-                    0,
-                    PlatformService.isDesktop ? AppSpacing.xl : AppSpacing.md,
-                    PlatformService.isDesktop ? 60.0 : 120.0,
-                  ),
-                  child: filteredApps.isEmpty
+                child: Builder(
+                  builder: (context) {
+                    final bool isLandscapeMobile = !PlatformService.isDesktop &&
+                        MediaQuery.of(context).size.width >
+                            MediaQuery.of(context).size.height &&
+                        MediaQuery.of(context).size.height < 550;
+                    final double bottomPadding =
+                        (PlatformService.isDesktop || isLandscapeMobile)
+                            ? 40.0
+                            : 120.0;
+
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        PlatformService.isDesktop ? AppSpacing.xl : AppSpacing.md,
+                        0,
+                        PlatformService.isDesktop ? AppSpacing.xl : AppSpacing.md,
+                        bottomPadding,
+                      ),
+                      child: filteredApps.isEmpty
                       ? GlassCard(
                           enableBlur: true,
                           child: const Center(
@@ -385,18 +396,18 @@ class _ReportScreenState extends State<ReportScreen> {
                                           DataCell(Text(
                                             FormatUtils.formatBytes(
                                                 app.rxBytes),
-                                            style: GoogleFonts.jetBrainsMono(
+                                            style: AppTypography.mono(
                                                 fontSize: 12),
                                           )),
                                           DataCell(Text(
                                             FormatUtils.formatBytes(
                                                 app.txBytes),
-                                            style: GoogleFonts.jetBrainsMono(
+                                            style: AppTypography.mono(
                                                 fontSize: 12),
                                           )),
                                           DataCell(Text(
                                             '${percentage.toStringAsFixed(1)}%',
-                                            style: GoogleFonts.jetBrainsMono(
+                                            style: AppTypography.mono(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
                                               color: isDark
@@ -408,7 +419,7 @@ class _ReportScreenState extends State<ReportScreen> {
                                           DataCell(Text(
                                             FormatUtils.formatBytes(
                                                 app.totalBytes),
-                                            style: GoogleFonts.jetBrainsMono(
+                                            style: AppTypography.mono(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 12.5,
                                               color: primaryColor,
@@ -423,8 +434,10 @@ class _ReportScreenState extends State<ReportScreen> {
                             },
                           ),
                         ),
+                      );
+                    },
+                  ),
                 ),
-              ),
             ],
           );
         },

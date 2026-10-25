@@ -9,11 +9,28 @@ enum GraphicsTier {
 
 class ThemeProvider with ChangeNotifier {
   final SettingsService _settingsService = SettingsService();
-  bool _isDarkMode = false;
+  ThemeMode _themeMode = ThemeMode.system;
   String _performanceMode = 'smooth'; // 'ultra', 'smooth', or 'efficiency'
   bool _reduceMotion = false;
 
-  bool get isDarkMode => _isDarkMode;
+  ThemeMode get themeMode => _themeMode;
+  bool get isSystemMode => _themeMode == ThemeMode.system;
+
+  bool get isDarkMode {
+    if (_themeMode == ThemeMode.system) {
+      return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
+    }
+    return _themeMode == ThemeMode.dark;
+  }
+
+  bool isDark(BuildContext context) {
+    if (_themeMode == ThemeMode.system) {
+      return MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    }
+    return _themeMode == ThemeMode.dark;
+  }
+
   String get performanceMode => _performanceMode;
   bool get isSmoothMode => _performanceMode == 'smooth';
   bool get isUltraMode => _performanceMode == 'ultra';
@@ -32,16 +49,40 @@ class ThemeProvider with ChangeNotifier {
   }
 
   Future<void> _loadSettings() async {
-    _isDarkMode = await _settingsService.isDarkMode();
+    final modeStr = await _settingsService.getThemeMode();
+    _themeMode = switch (modeStr) {
+      'dark' => ThemeMode.dark,
+      'light' => ThemeMode.light,
+      _ => ThemeMode.system,
+    };
     _performanceMode = await _settingsService.getPerformanceMode();
     _reduceMotion = await _settingsService.isReduceMotion();
     notifyListeners();
   }
 
-  Future<void> toggleTheme() async {
-    _isDarkMode = !_isDarkMode;
-    await _settingsService.setDarkMode(_isDarkMode);
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (_themeMode == mode) return;
+    _themeMode = mode;
+    final modeStr = switch (mode) {
+      ThemeMode.dark => 'dark',
+      ThemeMode.light => 'light',
+      ThemeMode.system => 'system',
+    };
+    await _settingsService.setThemeMode(modeStr);
     notifyListeners();
+  }
+
+  Future<void> toggleTheme() async {
+    if (_themeMode == ThemeMode.system) {
+      final isCurrentDark = WidgetsBinding
+              .instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
+      await setThemeMode(isCurrentDark ? ThemeMode.light : ThemeMode.dark);
+    } else if (_themeMode == ThemeMode.dark) {
+      await setThemeMode(ThemeMode.light);
+    } else {
+      await setThemeMode(ThemeMode.dark);
+    }
   }
 
   Future<void> setPerformanceMode(String mode) async {

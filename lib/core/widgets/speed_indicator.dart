@@ -2,11 +2,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'glass_surface.dart';
 import '../../utils/format_utils.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 import '../platform/platform_service.dart';
 
 class SpeedIndicator extends StatelessWidget {
@@ -379,7 +379,7 @@ class SpeedIndicator extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             formatted,
-            style: GoogleFonts.jetBrainsMono(
+            style: AppTypography.mono(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: isDark ? Colors.white : const Color(0xFF1C1C1E),
@@ -415,7 +415,7 @@ class SpeedIndicator extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             formatted,
-            style: GoogleFonts.jetBrainsMono(
+            style: AppTypography.mono(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
               color: isDark ? Colors.white : const Color(0xFF1C1C1E),

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../models/app_usage_model.dart';
 import '../utils/format_utils.dart';
@@ -10,6 +9,7 @@ import '../screens/app_detail_screen.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_radii.dart';
+import '../core/theme/app_typography.dart';
 
 class AppUsageTile extends StatelessWidget {
   final AppUsageModel appUsage;
@@ -18,11 +18,11 @@ class AppUsageTile extends StatelessWidget {
   final bool isFirst;
   final bool isLast;
 
-  static final TextStyle _monoTotalBase = GoogleFonts.jetBrainsMono(
+  static final TextStyle _monoTotalBase = AppTypography.mono(
     fontWeight: FontWeight.w700,
     fontSize: 14,
   );
-  static final TextStyle _monoStatBase = GoogleFonts.jetBrainsMono(
+  static final TextStyle _monoStatBase = AppTypography.mono(
     fontSize: 12,
     fontWeight: FontWeight.w500,
   );
@@ -140,9 +140,9 @@ class AppUsageTile extends StatelessWidget {
                                 )
                               : (Platform.isWindows
                                   ? Icon(CupertinoIcons.desktopcomputer,
-                                      color: primaryColor, size: 26)
-                                  : Icon(CupertinoIcons.device_phone_portrait,
-                                      color: primaryColor, size: 26)),
+                                      color: primaryColor, size: 24)
+                                  : Icon(CupertinoIcons.app_fill,
+                                      color: primaryColor, size: 24)),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),

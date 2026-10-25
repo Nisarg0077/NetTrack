@@ -6,16 +6,40 @@ import '../models/export_history_item.dart';
 
 class SettingsService {
   static const String _themeKey = 'isDarkMode';
+  static const String _themeModeKey = 'themeMode'; // 'system', 'light', 'dark'
   static const String _refreshIntervalKey = 'refreshInterval';
+
+  Future<void> setThemeMode(String mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeModeKey, mode);
+    if (mode == 'dark') {
+      await prefs.setBool(_themeKey, true);
+    } else if (mode == 'light') {
+      await prefs.setBool(_themeKey, false);
+    }
+  }
+
+  Future<String> getThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final mode = prefs.getString(_themeModeKey);
+    if (mode != null) return mode;
+    // Check backwards compatibility
+    if (prefs.containsKey(_themeKey)) {
+      final isDark = prefs.getBool(_themeKey) ?? false;
+      return isDark ? 'dark' : 'light';
+    }
+    return 'system'; // Default system theme
+  }
 
   Future<void> setDarkMode(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_themeKey, isDark);
+    await prefs.setString(_themeModeKey, isDark ? 'dark' : 'light');
   }
 
   Future<bool> isDarkMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_themeKey) ?? false; // Default light mode
+    final mode = await getThemeMode();
+    return mode == 'dark';
   }
 
   Future<void> setRefreshInterval(int seconds) async {
