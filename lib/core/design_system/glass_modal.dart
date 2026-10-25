@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
-/// An authentic Apple & Liquid Glass inspired modal dialog.
+/// An authentic Fusion Liquid Glass modal dialog.
 class GlassDialog extends StatelessWidget {
   final Widget? title;
   final Widget? content;
@@ -115,7 +115,7 @@ class GlassDialog extends StatelessWidget {
   }
 }
 
-/// An authentic Apple Liquid Glass modal bottom sheet.
+/// A modern Fusion Liquid Glass modal bottom sheet.
 class GlassBottomSheet extends StatelessWidget {
   final Widget child;
   final double blur;
@@ -156,7 +156,7 @@ class GlassBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 10),
-          // Apple Grab Handle
+          // Sheet Grab Handle
           Center(
             child: Container(
               width: 38,

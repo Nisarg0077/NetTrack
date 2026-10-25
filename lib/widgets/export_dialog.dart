@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../providers/data_provider.dart';
 import 'package:fusion_ui/fusion_ui.dart' as fusion;
 import 'package:fusion_ui/fusion_ui.dart' show FusionSwitch;
+import '../core/widgets/app_toast.dart';
 
 enum ExportPeriodOption {
   thisWeek,
@@ -145,11 +146,14 @@ class _ExportDialogState extends State<ExportDialog> {
     Navigator.pop(context); // Close dialog
 
     if (item != null) {
+      AppToast.success(
+        context,
+        'Export generated: ${item.fileName}',
+        subtitle: item.totalBytesFormatted,
+      );
       _showSuccessSheet(context, item);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to export usage report.')),
-      );
+      AppToast.error(context, 'Failed to export usage report.');
     }
   }
 
@@ -159,15 +163,23 @@ class _ExportDialogState extends State<ExportDialog> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: isDark ? 0.55 : 0.25),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
+        return fusion.GlassSurface(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          blur: 28,
+          elevation: 4,
+          useBackdropFilter: true,
+          padding: EdgeInsets.zero,
+          child: Material(
+            color: Colors.transparent,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -216,6 +228,11 @@ class _ExportDialogState extends State<ExportDialog> {
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         onPressed: () {
                           Navigator.pop(ctx);
+                          AppToast.info(
+                            context,
+                            'Sharing report...',
+                            icon: CupertinoIcons.share,
+                          );
                           _exportService.shareFile(item.filePath);
                         },
                         child: Row(
@@ -241,6 +258,11 @@ class _ExportDialogState extends State<ExportDialog> {
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         onPressed: () {
                           Navigator.pop(ctx);
+                          AppToast.info(
+                            context,
+                            'Opening ${item.fileName}...',
+                            icon: CupertinoIcons.arrow_up_right_square,
+                          );
                           _exportService.openFile(item.filePath);
                         },
                         child: const Row(
@@ -267,10 +289,13 @@ class _ExportDialogState extends State<ExportDialog> {
               ],
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      ),
+    ),
+  );
+},
+);
+}
 
   @override
   Widget build(BuildContext context) {

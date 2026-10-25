@@ -28,7 +28,7 @@ class AdaptiveNavigation extends StatelessWidget {
         final bool isDesktop =
             PlatformService.isDesktop || constraints.maxWidth >= 768;
         if (isDesktop) {
-          // Desktop Workstation: Permanent macOS Sidebar (compact only on narrow windows)
+          // Desktop Workstation: Permanent Workstation Sidebar (compact only on narrow windows)
           final bool isCompact = constraints.maxWidth < 860;
           return Scaffold(
             backgroundColor: Colors.transparent,
@@ -77,7 +77,7 @@ class AdaptiveNavigation extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Spacing (Clean macOS header without fake traffic lights)
+              // Top Spacing (Clean workstation header)
               SizedBox(height: isCompact ? 22 : 26),
 
               // Branding (Station App Title)
@@ -171,7 +171,7 @@ class AdaptiveNavigation extends StatelessWidget {
               ),
               const SizedBox(height: 18),
 
-              // 3. macOS Source List Sections
+              // 3. Navigation Sections
               if (!isCompact)
                 Padding(
                   padding: const EdgeInsets.only(left: 20, bottom: 8, top: 4),
@@ -236,7 +236,7 @@ class AdaptiveNavigation extends StatelessWidget {
 
               const Spacer(),
 
-              // 4. Bottom macOS Network Inspector Card
+              // 4. Bottom Network Inspector Card
               if (!isCompact)
                 Padding(
                   padding: const EdgeInsets.all(14.0),

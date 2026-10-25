@@ -117,14 +117,14 @@ class NetTrackApp extends StatelessWidget {
               extensions: [fusionLight],
               brightness: Brightness.light,
               colorScheme: const ColorScheme.light(
-                primary: Color(0xFF007AFF), // Apple System Blue
+                primary: Color(0xFF007AFF), // System Blue
                 onPrimary: Colors.white,
-                secondary: Color(0xFF5856D6), // Apple System Purple / Indigo
+                secondary: Color(0xFF5856D6), // System Purple / Indigo
                 onSecondary: Colors.white,
                 surface: Color(0xFFFFFFFF),
                 onSurface: Color(0xFF1C1C1E),
                 surfaceContainerHighest: Color(0xFFDFE5EF),
-                error: Color(0xFFFF3B30), // Apple System Red
+                error: Color(0xFFFF3B30), // System Red
                 onError: Colors.white,
               ),
               scaffoldBackgroundColor: Colors.transparent,
@@ -206,11 +206,11 @@ class NetTrackApp extends StatelessWidget {
               extensions: [fusionDark],
               brightness: Brightness.dark,
               colorScheme: const ColorScheme.dark(
-                primary: Color(0xFF0A84FF), // Apple Dark System Blue
+                primary: Color(0xFF0A84FF), // Dark System Blue
                 onPrimary: Colors.white,
-                secondary: Color(0xFF5E5CE6), // Apple Dark Indigo
+                secondary: Color(0xFF5E5CE6), // Dark Indigo
                 onSecondary: Colors.white,
-                surface: Color(0xFF1C1C1E), // Apple System Gray 6 Dark
+                surface: Color(0xFF1C1C1E), // Dark Neutral Surface
                 onSurface: Color(0xFFF2F2F7),
                 surfaceContainerHighest: Color(0xFF2C2C2E),
                 error: Color(0xFFFF453A),

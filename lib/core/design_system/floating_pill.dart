@@ -92,7 +92,7 @@ class FloatingPill extends StatelessWidget {
   }
 }
 
-/// A compact, interactive pill action button inspired by modern Apple and ChatGPT interfaces.
+/// A compact, interactive pill action button inspired by modern floating dock and fluid interfaces.
 class FloatingActionPill extends StatefulWidget {
   final IconData icon;
   final String? label;

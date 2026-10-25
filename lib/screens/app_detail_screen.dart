@@ -231,7 +231,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
                     );
                   }
 
-                  // Mobile iOS Layout
+                  // Mobile Adaptive Layout
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(AppSpacing.md,
                         AppSpacing.sm, AppSpacing.md, AppSpacing.xl),

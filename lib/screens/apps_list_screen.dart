@@ -18,6 +18,7 @@ import '../core/design_system/floating_pill.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/platform/platform_service.dart';
+import '../core/widgets/app_toast.dart';
 
 class AppsListScreen extends StatefulWidget {
   final FocusNode? searchFocusNode;
@@ -199,7 +200,14 @@ class _AppsListScreenState extends State<AppsListScreen> {
                           icon: CupertinoIcons.arrow_clockwise,
                           label: 'Refresh',
                           isPrimary: true,
-                          onPressed: () => dataProvider.fetchData(),
+                          onPressed: () {
+                            dataProvider.fetchData();
+                            AppToast.info(
+                              context,
+                              'Applications refreshed',
+                              icon: CupertinoIcons.arrow_clockwise,
+                            );
+                          },
                         ),
                       ],
                       bottom: Column(

@@ -5,7 +5,7 @@ import '../platform/platform_service.dart';
 /// A modern, adaptive Liquid Glass toolbar.
 ///
 /// On Mobile / Android: Renders as a floating stadium capsule over the content.
-/// On Desktop: Renders as a refined macOS translucent top toolbar.
+/// On Desktop: Renders as a refined workstation translucent top toolbar.
 class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final Widget? titleWidget;
@@ -115,7 +115,7 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
           )
         : mainRow;
 
-    // Desktop presentation: full-width translucent macOS top bar
+    // Desktop presentation: full-width translucent workstation top bar
     if (isDesktop) {
       Widget desktopBar = fusion.GlassSurface(
         width: double.infinity,

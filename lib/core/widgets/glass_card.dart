@@ -3,7 +3,7 @@ import 'package:fusion_ui/fusion_ui.dart' as fusion;
 import '../theme/app_radii.dart';
 import '../theme/app_spacing.dart';
 
-/// An authentic Apple Liquid Glass card surface powered by Fusion UI.
+/// A modern Fusion Liquid Glass card surface.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;

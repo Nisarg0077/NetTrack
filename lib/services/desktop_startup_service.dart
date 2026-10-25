@@ -65,7 +65,7 @@ class DesktopStartupService {
       } catch (_) {}
     }
 
-    // 2. Check launch_at_startup plugin (Handles Linux/MacOS natively)
+    // 2. Check launch_at_startup plugin (Handles desktop platforms natively)
     try {
       return await launchAtStartup.isEnabled();
     } catch (_) {
@@ -137,7 +137,7 @@ class DesktopStartupService {
       }
     }
 
-    // 3. Call launchAtStartup plugin for Linux / MacOS / MSIX compatibility
+    // 3. Call launchAtStartup plugin for desktop platform / MSIX compatibility
     try {
       await launchAtStartup.enable();
       success = true;

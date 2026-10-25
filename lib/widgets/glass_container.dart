@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
-/// Authentic Apple Frosted Glass Container powered by Fusion UI.
+/// Modern Fusion Frosted Glass Container.
 class GlassContainer extends StatelessWidget {
   final Widget child;
   final double? width;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
-/// Authentic Apple Liquid Glass ambient optical backdrop powered by Fusion UI.
+/// Modern Fusion Liquid Glass ambient optical backdrop.
 class AmbientBackground extends StatelessWidget {
   final Widget child;
 

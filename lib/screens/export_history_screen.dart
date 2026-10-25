@@ -12,6 +12,8 @@ import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
 import '../core/platform/platform_service.dart';
 import '../core/theme/app_spacing.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
+import '../core/widgets/app_toast.dart';
 
 class ExportHistoryScreen extends StatefulWidget {
   const ExportHistoryScreen({super.key});
@@ -44,11 +46,27 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
   Future<void> _deleteItem(String id) async {
     await _settingsService.deleteExportHistoryItem(id);
     await _loadHistory();
+    if (mounted) {
+      AppToast.info(
+        context,
+        'Report deleted from history',
+        icon: CupertinoIcons.trash,
+        iconColor: const Color(0xFFFF3B30),
+      );
+    }
   }
 
   Future<void> _clearAll() async {
     await _settingsService.clearExportHistory();
     await _loadHistory();
+    if (mounted) {
+      AppToast.info(
+        context,
+        'Export history cleared',
+        icon: CupertinoIcons.trash,
+        iconColor: const Color(0xFFFF3B30),
+      );
+    }
   }
 
   void _showActionSheet(BuildContext context, ExportHistoryItem item) {
@@ -67,35 +85,15 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                 const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 380),
-              child: ClipRRect(
+              child: fusion.GlassSurface(
                 borderRadius: BorderRadius.circular(26),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xE61C1C1E)
-                          : const Color(0xF2FFFFFF),
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0x2EFFFFFF)
-                            : const Color(0x24000000),
-                        width: 0.8,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black
-                              .withValues(alpha: isDark ? 0.4 : 0.12),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                blur: 28,
+                elevation: 4,
+                useBackdropFilter: true,
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                         Container(
                           width: 52,
                           height: 52,
@@ -200,8 +198,6 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                 ),
               ),
             ),
-          ),
-        ),
       ),
     );
   }
@@ -266,35 +262,15 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                 const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 380),
-              child: ClipRRect(
+              child: fusion.GlassSurface(
                 borderRadius: BorderRadius.circular(26),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xE61C1C1E)
-                          : const Color(0xF2FFFFFF),
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0x2EFFFFFF)
-                            : const Color(0x24000000),
-                        width: 0.8,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black
-                              .withValues(alpha: isDark ? 0.45 : 0.12),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                blur: 28,
+                elevation: 4,
+                useBackdropFilter: true,
+                padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                         Container(
                           width: 52,
                           height: 52,
@@ -383,8 +359,6 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                 ),
               ),
             ),
-          ),
-        ),
       ),
     );
   }

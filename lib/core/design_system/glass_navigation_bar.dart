@@ -49,20 +49,64 @@ class GlassNavigationBar extends StatelessWidget {
           blur: blur,
           useBackdropFilter: true,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-          child: Row(
-            children: [
-              for (int i = 0; i < items.length; i++)
-                Expanded(
-                  child: _buildItem(
-                    context,
-                    index: i,
-                    item: items[i],
-                    isSelected: currentIndex == i,
-                    isDark: isDark,
-                    primaryColor: primaryColor,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double itemWidth = constraints.maxWidth / items.length;
+              final double activePillLeft = currentIndex * itemWidth;
+
+              return Stack(
+                children: [
+                  // Smooth horizontally gliding indicator pill
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 280),
+                    curve: Curves.easeOutCubic,
+                    left: activePillLeft + 3,
+                    top: 2,
+                    bottom: 2,
+                    width: itemWidth - 6,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? primaryColor.withValues(alpha: 0.22)
+                            : primaryColor.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: isDark
+                              ? primaryColor.withValues(alpha: 0.45)
+                              : primaryColor.withValues(alpha: 0.32),
+                          width: 0.85,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withValues(
+                                alpha: isDark ? 0.35 : 0.16),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-            ],
+
+                  // Tab items on top of sliding indicator
+                  Row(
+                    children: [
+                      for (int i = 0; i < items.length; i++)
+                        Expanded(
+                          child: _buildItem(
+                            context,
+                            index: i,
+                            item: items[i],
+                            isSelected: currentIndex == i,
+                            isDark: isDark,
+                            primaryColor: primaryColor,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -83,35 +127,9 @@ class GlassNavigationBar extends StatelessWidget {
         HapticFeedback.lightImpact();
         onItemSelected(index);
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
+      child: Container(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark
-                  ? primaryColor.withValues(alpha: 0.22)
-                  : primaryColor.withValues(alpha: 0.12))
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-          border: isSelected
-              ? Border.all(
-                  color: isDark
-                      ? primaryColor.withValues(alpha: 0.45)
-                      : primaryColor.withValues(alpha: 0.30),
-                  width: 0.8,
-                )
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: isDark ? 0.35 : 0.18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
+        alignment: Alignment.center,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -120,8 +138,9 @@ class GlassNavigationBar extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 AnimatedScale(
-                  scale: isSelected ? 1.08 : 1.0,
-                  duration: const Duration(milliseconds: 200),
+                  scale: isSelected ? 1.14 : 1.0,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeOutBack,
                   child: Icon(
                     isSelected ? (item.activeIcon ?? item.icon) : item.icon,
                     size: 19,
@@ -164,10 +183,9 @@ class GlassNavigationBar extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 2.5),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -177,6 +195,11 @@ class GlassNavigationBar extends StatelessWidget {
                     : (isDark
                         ? const Color(0xFF8E8E93)
                         : const Color(0xFF6E6E73)),
+              ),
+              child: Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

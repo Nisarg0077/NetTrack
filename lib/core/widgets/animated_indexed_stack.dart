@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 
-/// An Apple-style Animated Indexed Stack that preserves the state and scroll position
+/// A smooth Animated Indexed Stack that preserves the state and scroll position
 /// of all child screens while providing a silky smooth crossfade and subtle slide transition
 /// between tabs.
 class AnimatedIndexedStack extends StatefulWidget {

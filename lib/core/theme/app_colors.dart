@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand
-  static const Color primary = Color(0xFF007AFF); // Apple Blue
-  static const Color secondary = Color(0xFF5856D6); // Apple Indigo
+  static const Color primary = Color(0xFF007AFF); // Primary System Blue
+  static const Color secondary = Color(0xFF5856D6); // System Indigo
 
   // Status
-  static const Color success = Color(0xFF34C759); // Apple Green
-  static const Color warning = Color(0xFFFF9500); // Apple Orange
-  static const Color error = Color(0xFFFF3B30); // Apple Red
+  static const Color success = Color(0xFF34C759); // Success Green
+  static const Color warning = Color(0xFFFF9500); // Warning Orange
+  static const Color error = Color(0xFFFF3B30); // Danger Red
 
   // Dark Theme
   static const Color darkBackground =
-      Color(0xFF0A0B0E); // Apple Studio Deep Obsidian
+      Color(0xFF0A0B0E); // Deep Obsidian
   static const Color darkSurface = Color(0xFF14161F);
   static const Color darkSurfaceElevated = Color(0xFF1B1E29);
   static const Color darkBorder = Color(0x28FFFFFF);
@@ -23,7 +23,7 @@ class AppColors {
 
   // Light Theme
   static const Color lightBackground =
-      Color(0xFFE8EEF5); // Apple Studio Slate Porcelain
+      Color(0xFFE8EEF5); // Slate Porcelain
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightSurfaceElevated = Color(0xFFF2F5FA);
   static const Color lightBorder = Color(0x1F000000);
@@ -32,7 +32,7 @@ class AppColors {
   static const Color lightTextSecondary = Color(0x993C3C43);
   static const Color lightTextTertiary = Color(0x4D3C3C43);
 
-  // Apple Liquid Glass Palette
+  // Fusion Liquid Glass Palette
   static const Color glassWhite = Color(0xE6FFFFFF);
   static const Color glassDark = Color(0x66181B26);
   static const Color glassBorderLight = Color(0x1F000000);

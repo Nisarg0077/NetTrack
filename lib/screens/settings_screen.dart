@@ -22,6 +22,7 @@ import '../core/design_system/floating_pill.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/platform/platform_service.dart';
+import '../core/widgets/app_toast.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -115,7 +116,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 bottom: false,
                 child: GlassToolbar(
                   useSafeArea: false,
-                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   title: 'Settings',
                   statusWidget: ConnectionStatusPill(
                     label: PlatformService.platformName,
@@ -199,7 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 }
 
-                // Mobile iOS Inset Grouped layout
+                // Mobile Inset Grouped layout
                 return Padding(
                   padding: EdgeInsets.fromLTRB(horizontalPadding, AppSpacing.sm,
                       horizontalPadding, bottomPadding),
@@ -268,12 +270,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         setState(() {
                           _runAtStartup = value;
                         });
+                        AppToast.success(
+                          context,
+                          value
+                              ? 'Run at startup enabled'
+                              : 'Run at startup disabled',
+                          icon: CupertinoIcons.power,
+                        );
                       } catch (e) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  'Could not change startup settings: $e')),
+                        AppToast.error(
+                          context,
+                          'Could not change startup settings: $e',
                         );
                       }
                     },
@@ -344,6 +352,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: themeProvider.reduceMotion,
                   onChanged: (bool value) {
                     themeProvider.setReduceMotion(value);
+                    AppToast.info(
+                      context,
+                      value
+                          ? 'Reduce motion enabled'
+                          : 'Reduce motion disabled',
+                      icon: CupertinoIcons.sparkles,
+                    );
                   },
                 ),
                 isDark: isDark,
@@ -380,9 +395,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       } else {
                         service.invoke("stopService");
                       }
+                      if (!mounted) return;
                       setState(() {
                         _isBackgroundServiceRunning = value;
                       });
+                      AppToast.info(
+                        context,
+                        value
+                            ? 'Background tracking active'
+                            : 'Background tracking stopped',
+                        icon: CupertinoIcons.waveform_path_ecg,
+                      );
                     },
                   ),
                   isDark: isDark,
@@ -404,17 +427,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final result =
                           await Permission.ignoreBatteryOptimizations.request();
                       if (result.isGranted && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Battery optimizations ignored!')),
+                        AppToast.success(
+                          context,
+                          'Battery optimizations ignored',
+                          icon: CupertinoIcons.battery_100,
                         );
                       }
                     } else {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Battery optimizations are already ignored!')),
+                        AppToast.info(
+                          context,
+                          'Battery optimizations already ignored',
+                          icon: CupertinoIcons.battery_100,
                         );
                       }
                     }
@@ -570,7 +594,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? 'Windows Desktop (x64)'
                     : (Platform.isAndroid
                         ? 'Android OS'
-                        : (Platform.isLinux ? 'Linux OS' : 'macOS / iOS')),
+                        : (Platform.isLinux ? 'Linux OS' : PlatformService.platformName)),
                 trailing: Text(
                   Platform.operatingSystem.toUpperCase(),
                   style: TextStyle(
@@ -699,7 +723,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Crafted with Apple Frosted Glass UI',
+            'Crafted with Fusion-ui',
             style: TextStyle(
               fontSize: 11,
               color: isDark ? const Color(0xFF636366) : const Color(0xFFA1A1A6),
@@ -841,35 +865,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400),
-                    child: ClipRRect(
+                    child: GlassSurface(
                       borderRadius: BorderRadius.circular(26),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xE61C1C1E)
-                                : const Color(0xF2FFFFFF),
-                            borderRadius: BorderRadius.circular(26),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0x2EFFFFFF)
-                                  : const Color(0x24000000),
-                              width: 0.8,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withValues(alpha: isDark ? 0.4 : 0.12),
-                                blurRadius: 30,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
+                      blur: 28,
+                      elevation: 4,
+                      useBackdropFilter: true,
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                               Container(
                                 width: 52,
                                 height: 52,
@@ -1054,9 +1058,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -1077,6 +1079,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (context.mounted) Navigator.pop(context);
     if (context.mounted) {
       Provider.of<DataProvider>(context, listen: false).restartAutoRefresh();
+      final intervalText = seconds == 0 ? 'Manual only' : '$seconds seconds';
+      AppToast.success(
+        context,
+        'Polling interval set to $intervalText',
+        icon: CupertinoIcons.timer,
+      );
     }
   }
 
@@ -1089,7 +1097,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       {
         'tier': 'ultra',
         'title': 'Frosted Glass (High Fidelity)',
-        'badge': 'Apple Glass',
+        'badge': 'Fusion Glass',
         'subtitle':
             'Authentic optical backdrop diffusion, crisp specular hairline rims, and depth shadows. Hardware accelerated.',
         'icon': CupertinoIcons.sparkles,
@@ -1126,35 +1134,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
-                child: ClipRRect(
+                child: GlassSurface(
                   borderRadius: BorderRadius.circular(26),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: Container(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xE61C1C1E)
-                            : const Color(0xF2FFFFFF),
-                        borderRadius: BorderRadius.circular(26),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0x2EFFFFFF)
-                              : const Color(0x24000000),
-                          width: 0.8,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withValues(alpha: isDark ? 0.4 : 0.12),
-                            blurRadius: 30,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+                  blur: 28,
+                  elevation: 4,
+                  useBackdropFilter: true,
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                           Container(
                             width: 52,
                             height: 52,
@@ -1218,6 +1206,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   onTap: () {
                                     themeProvider.setPerformanceMode(mode);
                                     Navigator.of(dialogCtx).pop();
+                                    AppToast.success(
+                                      context,
+                                      'Graphics engine set to ${opt['badge']}',
+                                      icon: CupertinoIcons.sparkles,
+                                    );
                                   },
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
@@ -1331,9 +1324,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-            ),
-          ),
-        );
+            );
       },
     );
   }

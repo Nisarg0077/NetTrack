@@ -20,6 +20,7 @@ import '../core/theme/app_spacing.dart';
 import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
 import '../core/platform/platform_service.dart';
+import '../core/widgets/app_toast.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -73,6 +74,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       onPressed: () {
                         Provider.of<DataProvider>(context, listen: false)
                             .fetchData();
+                        AppToast.info(
+                          context,
+                          'Telemetry refreshed',
+                          icon: CupertinoIcons.arrow_clockwise,
+                        );
                       },
                     ),
                   ],
@@ -258,7 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ],
                           ] else ...[
-                            // Mobile iOS Layout
+                            // Mobile Adaptive Layout
                             if (dataProvider.selectedRange ==
                                 DateRange.today) ...[
                               SpeedIndicator(

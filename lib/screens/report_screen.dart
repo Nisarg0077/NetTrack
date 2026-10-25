@@ -18,6 +18,7 @@ import '../core/design_system/floating_pill.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/platform/platform_service.dart';
+import '../core/widgets/app_toast.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -165,7 +166,14 @@ class _ReportScreenState extends State<ReportScreen> {
                         FloatingActionPill(
                           icon: CupertinoIcons.arrow_clockwise,
                           label: 'Refresh',
-                          onPressed: () => dataProvider.fetchData(),
+                          onPressed: () {
+                            dataProvider.fetchData();
+                            AppToast.info(
+                              context,
+                              'Report refreshed',
+                              icon: CupertinoIcons.arrow_clockwise,
+                            );
+                          },
                         ),
                       ],
                       bottom: Column(

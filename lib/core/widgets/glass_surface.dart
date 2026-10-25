@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fusion_ui/fusion_ui.dart' as fusion;
 import '../theme/app_radii.dart';
 
-/// Authentic Apple macOS / iOS Frosted Glass Surface powered by Fusion UI.
+/// Modern Fusion Frosted Glass Surface.
 class GlassSurface extends StatelessWidget {
   final Widget child;
   final double blur;

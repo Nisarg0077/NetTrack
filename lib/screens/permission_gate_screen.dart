@@ -31,7 +31,7 @@ class PermissionGateScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Luminous Apple Shield Icon
+                      // Luminous Shield Icon
                       TweenAnimationBuilder<double>(
                         tween: Tween<double>(begin: 0, end: 1),
                         duration: const Duration(milliseconds: 900),
@@ -100,7 +100,7 @@ class PermissionGateScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 32),
 
-                      // Apple Style Primary Action Button
+                      // Modern Primary Action Button
                       SizedBox(
                         width: double.infinity,
                         child: CupertinoButton(
