@@ -183,9 +183,9 @@ class _FloatingActionPillState extends State<FloatingActionPill> {
             padding: widget.label != null
                 ? EdgeInsets.symmetric(
                     horizontal: widget.isCompact ? 10 : 13,
-                    vertical: widget.isCompact ? 5 : 7,
+                    vertical: widget.isCompact ? 4.5 : 6.0,
                   )
-                : EdgeInsets.all(widget.isCompact ? 6.5 : 8),
+                : EdgeInsets.all(widget.isCompact ? 6.0 : 7.5),
             decoration: BoxDecoration(
               color: bg,
               borderRadius: BorderRadius.circular(24),
@@ -200,6 +200,7 @@ class _FloatingActionPillState extends State<FloatingActionPill> {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
                   widget.icon,
@@ -217,6 +218,7 @@ class _FloatingActionPillState extends State<FloatingActionPill> {
                       fontSize: widget.isCompact ? 11.5 : 12.5,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.2,
+                      height: 1.2,
                       color: fg,
                     ),
                   ),
@@ -329,7 +331,7 @@ class _ConnectionStatusPillState extends State<ConnectionStatusPill>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.0),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
@@ -337,6 +339,7 @@ class _ConnectionStatusPillState extends State<ConnectionStatusPill>
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (widget.isLive) ...[
             AnimatedBuilder(
@@ -372,6 +375,7 @@ class _ConnectionStatusPillState extends State<ConnectionStatusPill>
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.1,
+              height: 1.2,
               color: fgColor,
             ),
           ),

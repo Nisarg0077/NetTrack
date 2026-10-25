@@ -107,12 +107,12 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
               pinned: true,
               delegate: SliverGlassToolbarDelegate(
                 height: MediaQuery.of(context).padding.top +
-                    (PlatformService.isDesktop ? 54.0 : 62.0),
+                    (PlatformService.isDesktop ? 54.0 : 64.0),
                 child: SafeArea(
                   bottom: false,
                   child: GlassToolbar(
                     useSafeArea: false,
-                    margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                    margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     leading: FloatingActionPill(
                       icon: CupertinoIcons.chevron_left,
                       isCompact: true,
@@ -122,6 +122,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
                     title: widget.appUsage.appName,
                     titleWidget: Row(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         if (widget.appUsage.appIcon != null)
                           Container(

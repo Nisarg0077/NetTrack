@@ -51,7 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 bottom: false,
                 child: GlassToolbar(
                   useSafeArea: false,
-                  margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   title: 'Overview',
                   statusWidget: Consumer<DataProvider>(
                     builder: (context, provider, _) {

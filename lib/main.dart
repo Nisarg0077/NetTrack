@@ -103,7 +103,7 @@ class NetTrackApp extends StatelessWidget {
                 isDark ? Brightness.light : Brightness.dark,
             statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
             systemNavigationBarColor:
-                isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
+                isDark ? const Color(0xFF000000) : const Color(0xFFE8EEF5),
             systemNavigationBarIconBrightness:
                 isDark ? Brightness.light : Brightness.dark,
             systemNavigationBarContrastEnforced: false,
@@ -123,7 +123,7 @@ class NetTrackApp extends StatelessWidget {
                 onSecondary: Colors.white,
                 surface: Color(0xFFFFFFFF),
                 onSurface: Color(0xFF1C1C1E),
-                surfaceContainerHighest: Color(0xFFE5E5EA),
+                surfaceContainerHighest: Color(0xFFDFE5EF),
                 error: Color(0xFFFF3B30), // Apple System Red
                 onError: Colors.white,
               ),

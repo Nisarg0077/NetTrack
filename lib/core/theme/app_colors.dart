@@ -23,9 +23,9 @@ class AppColors {
 
   // Light Theme
   static const Color lightBackground =
-      Color(0xFFF7F8FA); // Apple Studio Porcelain Ceramic
+      Color(0xFFE8EEF5); // Apple Studio Slate Porcelain
   static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightSurfaceElevated = Color(0xFFEFF1F6);
+  static const Color lightSurfaceElevated = Color(0xFFF2F5FA);
   static const Color lightBorder = Color(0x1F000000);
   static const Color lightSeparator = Color(0x2E3C3C43);
   static const Color lightTextPrimary = Color(0xFF1C1C1E);
@@ -33,9 +33,9 @@ class AppColors {
   static const Color lightTextTertiary = Color(0x4D3C3C43);
 
   // Apple Liquid Glass Palette
-  static const Color glassWhite = Color(0x99FFFFFF);
+  static const Color glassWhite = Color(0xE6FFFFFF);
   static const Color glassDark = Color(0x66181B26);
-  static const Color glassBorderLight = Color(0xD9FFFFFF);
+  static const Color glassBorderLight = Color(0x1F000000);
   static const Color glassBorderDark = Color(0x38FFFFFF);
 
   // Radiant Ambient Aurora Mesh

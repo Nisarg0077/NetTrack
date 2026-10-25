@@ -141,7 +141,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     bottom: false,
                     child: GlassToolbar(
                       useSafeArea: false,
-                      margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       title: 'Detailed Report',
                       statusWidget: ConnectionStatusPill(
                         label: '${filteredApps.length} Records',
@@ -192,22 +192,24 @@ class _ReportScreenState extends State<ReportScreen> {
                                   width: 0.85,
                                 ),
                               ),
-                              child: CupertinoSearchTextField(
-                                placeholder: 'Filter report by app name...',
-                                backgroundColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
-                                style: TextStyle(
-                                  color: isDark
-                                      ? Colors.white
-                                      : const Color(0xFF1C1C1E),
-                                  fontSize: 13.5,
+                              child: Center(
+                                child: CupertinoSearchTextField(
+                                  placeholder: 'Filter report by app name...',
+                                  backgroundColor: Colors.transparent,
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      10, 0, 10, 0),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1C1C1E),
+                                    fontSize: 13.5,
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _searchQuery = value.toLowerCase();
+                                    });
+                                  },
                                 ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _searchQuery = value.toLowerCase();
-                                  });
-                                },
                               ),
                             ),
                           ),

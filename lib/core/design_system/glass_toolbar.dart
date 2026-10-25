@@ -48,7 +48,7 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
     Widget mainRow = Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isDesktop ? 20 : 16,
-        vertical: isDesktop ? 8 : 8,
+        vertical: isDesktop ? 6 : 6,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -58,9 +58,10 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
           Flexible(
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (leading != null) ...[
-                  leading!,
+                  Center(child: leading!),
                   const SizedBox(width: 8),
                 ],
                 Flexible(
@@ -73,6 +74,7 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
                           fontSize: isDesktop ? 16 : 18,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.3,
+                          height: 1.2,
                           color:
                               isDark ? Colors.white : const Color(0xFF1C1C1E),
                         ),
@@ -80,7 +82,7 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 if (statusWidget != null) ...[
                   const SizedBox(width: 10),
-                  statusWidget!,
+                  Center(child: statusWidget!),
                 ],
               ],
             ),
@@ -90,10 +92,11 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
           if (actions.isNotEmpty)
             Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 for (int i = 0; i < actions.length; i++) ...[
                   if (i > 0) const SizedBox(width: 6),
-                  actions[i],
+                  Center(child: actions[i]),
                 ],
               ],
             ),
@@ -101,23 +104,30 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
 
-    Widget fullContent = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        mainRow,
-        if (bottom != null) bottom!,
-      ],
-    );
+    Widget fullContent = bottom != null
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              mainRow,
+              bottom!,
+            ],
+          )
+        : mainRow;
 
     // Desktop presentation: full-width translucent macOS top bar
     if (isDesktop) {
       Widget desktopBar = fusion.GlassSurface(
+        width: double.infinity,
+        height: double.infinity,
         borderRadius: BorderRadius.zero,
         blur: 20,
         elevation: 0,
         useBackdropFilter: true,
+        padding: EdgeInsets.zero,
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -128,7 +138,23 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          child: fullContent,
+          child: bottom != null
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: mainRow,
+                      ),
+                    ),
+                    bottom!,
+                  ],
+                )
+              : Align(
+                  alignment: Alignment.center,
+                  child: mainRow,
+                ),
         ),
       );
       return useSafeArea
@@ -139,15 +165,18 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
     // Mobile presentation: Floating stadium capsule
     final r = BorderRadius.circular(28);
 
-    Widget floatingBar = Padding(
-      padding: margin ?? const EdgeInsets.fromLTRB(14, 6, 14, 8),
-      child: fusion.GlassSurface(
-        borderRadius: r,
-        elevation: 2,
-        blur: 24,
-        useBackdropFilter: true,
-        padding: EdgeInsets.zero,
-        child: fullContent,
+    Widget floatingBar = Align(
+      alignment: Alignment.center,
+      child: Padding(
+        padding: margin ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        child: fusion.GlassSurface(
+          borderRadius: r,
+          elevation: 2,
+          blur: 24,
+          useBackdropFilter: true,
+          padding: EdgeInsets.zero,
+          child: fullContent,
+        ),
       ),
     );
 
@@ -178,6 +207,7 @@ class SliverGlassToolbarDelegate extends SliverPersistentHeaderDelegate {
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return SizedBox(
       height: height,
+      width: double.infinity,
       child: child,
     );
   }

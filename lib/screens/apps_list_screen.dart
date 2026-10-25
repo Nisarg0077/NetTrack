@@ -187,7 +187,7 @@ class _AppsListScreenState extends State<AppsListScreen> {
                     bottom: false,
                     child: GlassToolbar(
                       useSafeArea: false,
-                      margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       title: 'Applications',
                       statusWidget: ConnectionStatusPill(
                         label: '${filteredApps.length} Apps',
@@ -222,19 +222,21 @@ class _AppsListScreenState extends State<AppsListScreen> {
                                   width: 0.85,
                                 ),
                               ),
-                              child: CupertinoSearchTextField(
-                                focusNode: widget.searchFocusNode,
-                                placeholder: 'Search installed apps...',
-                                backgroundColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
-                                style: TextStyle(
-                                  color: isDark
-                                      ? Colors.white
-                                      : const Color(0xFF1C1C1E),
-                                  fontSize: 13.5,
+                              child: Center(
+                                child: CupertinoSearchTextField(
+                                  focusNode: widget.searchFocusNode,
+                                  placeholder: 'Search installed apps...',
+                                  backgroundColor: Colors.transparent,
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      10, 0, 10, 0),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1C1C1E),
+                                    fontSize: 13.5,
+                                  ),
+                                  onChanged: _onSearchChanged,
                                 ),
-                                onChanged: _onSearchChanged,
                               ),
                             ),
                           ),

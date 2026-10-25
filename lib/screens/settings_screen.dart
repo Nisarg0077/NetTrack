@@ -110,12 +110,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             pinned: true,
             delegate: SliverGlassToolbarDelegate(
               height: MediaQuery.of(context).padding.top +
-                  (PlatformService.isDesktop ? 54.0 : 68.0),
+                  (PlatformService.isDesktop ? 54.0 : 64.0),
               child: SafeArea(
                 bottom: false,
                 child: GlassToolbar(
                   useSafeArea: false,
-                  margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   title: 'Settings',
                   statusWidget: ConnectionStatusPill(
                     label: PlatformService.platformName,
@@ -743,13 +743,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
                 color: iconColor,
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
                 child: Icon(icon, color: Colors.white, size: 16),
@@ -759,6 +760,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     title,
@@ -783,7 +785,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             if (trailing != null) ...[
               const SizedBox(width: 12),
-              trailing,
+              Center(child: trailing),
             ],
           ],
         ),

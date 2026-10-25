@@ -406,12 +406,12 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
               pinned: true,
               delegate: SliverGlassToolbarDelegate(
                 height: MediaQuery.of(context).padding.top +
-                    (PlatformService.isDesktop ? 54.0 : 62.0),
+                    (PlatformService.isDesktop ? 54.0 : 64.0),
                 child: SafeArea(
                   bottom: false,
                   child: GlassToolbar(
                     useSafeArea: false,
-                    margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                    margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     title: 'Export History',
                     leading: FloatingActionPill(
                       icon: CupertinoIcons.back,
