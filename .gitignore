@@ -6,6 +6,7 @@
 *.swp
 .buildlog/
 .history
+docs/
 
 
 
@@ -42,6 +43,7 @@ analysis_benchmark.json
 .pub/
 build/
 installer/
+android/app_temp/
 
 flutter_*.png
 linked_*.ds
@@ -111,6 +113,39 @@ coverage/
 
 # Symbols
 app.*.symbols
+
+# Local Development, Profiling & Scratch Artifacts
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+*.log
+win_debug.log
+flutter_*.log
+flutter-analyze-*.txt
+*-analyze-*.txt
+generate_*.dart
+test.dart
+test_icon.ico
+assets/noise.bmp
+scratch/
+.system_generated/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.patch
+*.diff
+*.cpuprofile
+*.timeline.json
+perf_*.json
+benchmark_*.json
+*.deb
+*.apk
+*.aab
+.DS_Store
+Thumbs.db
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

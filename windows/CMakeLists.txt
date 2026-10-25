@@ -1,5 +1,12 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
+
+# Help CMake find mt.exe from the Windows SDK (fixes LNK1327).
+find_program(CMAKE_MT mt.exe
+  PATHS "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+  NO_DEFAULT_PATH
+)
+
 project(net_track LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change

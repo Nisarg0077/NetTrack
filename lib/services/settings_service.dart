@@ -28,6 +28,30 @@ class SettingsService {
     return prefs.getInt(_refreshIntervalKey) ?? 60; // Default 60s
   }
 
+  static const String _performanceModeKey =
+      'performanceMode'; // 'smooth' or 'ultra'
+  static const String _reduceMotionKey = 'reduceMotion';
+
+  Future<void> setPerformanceMode(String mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_performanceModeKey, mode);
+  }
+
+  Future<String> getPerformanceMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_performanceModeKey) ?? 'smooth';
+  }
+
+  Future<void> setReduceMotion(bool reduce) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_reduceMotionKey, reduce);
+  }
+
+  Future<bool> isReduceMotion() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_reduceMotionKey) ?? false;
+  }
+
   static const String _cachedAppUsagesKey = 'cachedAppUsages';
   static const String _cachedNetworkStatsKey = 'cachedNetworkStats';
 
@@ -94,7 +118,8 @@ class SettingsService {
       history.removeRange(30, history.length);
     }
     final prefs = await SharedPreferences.getInstance();
-    final String jsonString = jsonEncode(history.map((e) => e.toJson()).toList());
+    final String jsonString =
+        jsonEncode(history.map((e) => e.toJson()).toList());
     await prefs.setString(_exportHistoryKey, jsonString);
   }
 
@@ -116,7 +141,8 @@ class SettingsService {
     final history = await getExportHistory();
     history.removeWhere((item) => item.id == id);
     final prefs = await SharedPreferences.getInstance();
-    final String jsonString = jsonEncode(history.map((e) => e.toJson()).toList());
+    final String jsonString =
+        jsonEncode(history.map((e) => e.toJson()).toList());
     await prefs.setString(_exportHistoryKey, jsonString);
   }
 
@@ -125,4 +151,3 @@ class SettingsService {
     await prefs.remove(_exportHistoryKey);
   }
 }
-

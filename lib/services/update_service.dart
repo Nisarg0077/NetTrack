@@ -11,13 +11,17 @@ class UpdateService {
   // The GitHub repository details for checking releases
   static const String _githubOwner = 'Nisarg0077';
   static const String _githubRepo = 'NetTrack';
-  static const String _apiUrl = 'https://api.github.com/repos/$_githubOwner/$_githubRepo/releases/latest';
+  static const String _apiUrl =
+      'https://api.github.com/repos/$_githubOwner/$_githubRepo/releases/latest';
 
-  static Future<void> checkForUpdates(BuildContext context, {bool showNoUpdateMessage = false}) async {
+  static Future<void> checkForUpdates(BuildContext context,
+      {bool showNoUpdateMessage = false}) async {
     if (_githubOwner == 'YOUR_USERNAME') {
       if (showNoUpdateMessage && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please configure your GitHub repo in UpdateService first.')),
+          const SnackBar(
+              content: Text(
+                  'Please configure your GitHub repo in UpdateService first.')),
         );
       }
       return;
@@ -29,10 +33,12 @@ class UpdateService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final String latestVersionTag = data['tag_name'];
-        final String releaseNotes = data['body'] ?? 'No release notes provided.';
-        
+        final String releaseNotes =
+            data['body'] ?? 'No release notes provided.';
+
         // Extract version number from tag (e.g., 'v1.0.1' -> '1.0.1')
-        final latestVersion = latestVersionTag.replaceAll('v', '').replaceAll('V', '');
+        final latestVersion =
+            latestVersionTag.replaceAll('v', '').replaceAll('V', '');
 
         final packageInfo = await PackageInfo.fromPlatform();
         final currentVersion = packageInfo.version;
@@ -42,7 +48,7 @@ class UpdateService {
           final List assets = data['assets'] ?? [];
           final requiredExtension = Platform.isWindows ? '.msix' : '.apk';
           String? directDownloadUrl;
-          
+
           for (var asset in assets) {
             final name = (asset['name'] as String).toLowerCase();
             if (name.endsWith(requiredExtension)) {
@@ -50,17 +56,18 @@ class UpdateService {
               break;
             }
           }
-          
+
           if (directDownloadUrl != null) {
             // Update available for this platform!
             if (context.mounted) {
-              Provider.of<DataProvider>(context, listen: false).setUpdateAvailable(
+              Provider.of<DataProvider>(context, listen: false)
+                  .setUpdateAvailable(
                 true,
                 version: latestVersion,
                 notes: releaseNotes,
                 url: directDownloadUrl,
               );
-              
+
               if (showNoUpdateMessage) {
                 showDialog(
                   context: context,
@@ -75,11 +82,12 @@ class UpdateService {
             }
             return;
           }
-        } 
-        
+        }
+
         // If we reach here, either version is not newer, or no platform asset found
         if (context.mounted) {
-          Provider.of<DataProvider>(context, listen: false).setUpdateAvailable(false);
+          Provider.of<DataProvider>(context, listen: false)
+              .setUpdateAvailable(false);
           if (showNoUpdateMessage) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('App is up to date.')),
@@ -89,7 +97,9 @@ class UpdateService {
       } else {
         if (showNoUpdateMessage && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to check for updates: ${response.statusCode}')),
+            SnackBar(
+                content: Text(
+                    'Failed to check for updates: ${response.statusCode}')),
           );
         }
       }
@@ -104,8 +114,10 @@ class UpdateService {
   }
 
   static bool _isNewerVersion(String currentVersion, String latestVersion) {
-    List<int> currentParts = currentVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    List<int> latestParts = latestVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    List<int> currentParts =
+        currentVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    List<int> latestParts =
+        latestVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
     // Pad lists to be same length
     while (currentParts.length < latestParts.length) {
@@ -119,7 +131,7 @@ class UpdateService {
       if (latestParts[i] > currentParts[i]) return true;
       if (latestParts[i] < currentParts[i]) return false;
     }
-    
+
     return false; // They are equal
   }
 }

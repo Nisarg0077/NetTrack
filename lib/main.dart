@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/app_shell.dart';
@@ -15,7 +14,7 @@ import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Set transparent system bar on Android
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -23,7 +22,7 @@ void main() async {
       systemNavigationBarColor: Colors.transparent,
     ),
   );
-  
+
   if (Platform.isWindows || Platform.isLinux) {
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = const WindowOptions(
@@ -41,7 +40,7 @@ void main() async {
 
     await SystemTrayService().init();
     await DesktopStartupService.init();
-    
+
     // Ensure it's enabled if user turned it on previously
     bool isStartupEnabled = await DesktopStartupService.isEnabled();
     if (isStartupEnabled) {
@@ -53,7 +52,6 @@ void main() async {
     }
   }
 
-  await SystemTrayService().init();
   await initializeBackgroundService();
   runApp(
     MultiProvider(
@@ -78,10 +76,13 @@ class NetTrackApp extends StatelessWidget {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            statusBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
             statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-            systemNavigationBarColor: isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
-            systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            systemNavigationBarColor:
+                isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7),
+            systemNavigationBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
             systemNavigationBarContrastEnforced: false,
           ),
           child: MaterialApp(
@@ -102,7 +103,7 @@ class NetTrackApp extends StatelessWidget {
                 error: Color(0xFFFF3B30), // Apple System Red
                 onError: Colors.white,
               ),
-              scaffoldBackgroundColor: const Color(0xFFF2F2F7), // Apple System Grouped Background
+              scaffoldBackgroundColor: Colors.transparent,
               splashFactory: NoSplash.splashFactory,
               highlightColor: Colors.transparent,
               hoverColor: const Color(0x0A000000),
@@ -151,13 +152,29 @@ class NetTrackApp extends StatelessWidget {
                 thickness: 0.8,
                 space: 1,
               ),
-              textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme).copyWith(
-                headlineLarge: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.5, color: const Color(0xFF1C1C1E)),
-                headlineMedium: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.4, color: const Color(0xFF1C1C1E)),
-                titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.3, color: const Color(0xFF1C1C1E)),
-                titleMedium: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.2, color: const Color(0xFF1C1C1E)),
-                bodyLarge: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFF1C1C1E)),
-                bodyMedium: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFF3C3C43)),
+              textTheme:
+                  GoogleFonts.outfitTextTheme(ThemeData.light().textTheme)
+                      .copyWith(
+                headlineLarge: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    color: const Color(0xFF1C1C1E)),
+                headlineMedium: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.4,
+                    color: const Color(0xFF1C1C1E)),
+                titleLarge: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
+                    color: const Color(0xFF1C1C1E)),
+                titleMedium: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                    color: const Color(0xFF1C1C1E)),
+                bodyLarge: GoogleFonts.outfit(
+                    letterSpacing: -0.1, color: const Color(0xFF1C1C1E)),
+                bodyMedium: GoogleFonts.outfit(
+                    letterSpacing: -0.1, color: const Color(0xFF3C3C43)),
               ),
             ),
             darkTheme: ThemeData(
@@ -174,7 +191,7 @@ class NetTrackApp extends StatelessWidget {
                 error: Color(0xFFFF453A),
                 onError: Colors.white,
               ),
-              scaffoldBackgroundColor: const Color(0xFF000000), // Pure Apple Dark
+              scaffoldBackgroundColor: Colors.transparent,
               splashFactory: NoSplash.splashFactory,
               highlightColor: Colors.transparent,
               hoverColor: const Color(0x14FFFFFF),
@@ -194,7 +211,7 @@ class NetTrackApp extends StatelessWidget {
                 brightness: Brightness.dark,
                 primaryColor: Color(0xFF0A84FF),
                 barBackgroundColor: Color(0xCC1C1C1E),
-                scaffoldBackgroundColor: Color(0xFF000000),
+                scaffoldBackgroundColor: Color(0xFF010101),
                 textTheme: CupertinoTextThemeData(
                   primaryColor: Colors.white,
                   textStyle: TextStyle(color: Colors.white),
@@ -223,13 +240,28 @@ class NetTrackApp extends StatelessWidget {
                 thickness: 0.8,
                 space: 1,
               ),
-              textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
-                headlineLarge: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.5, color: Colors.white),
-                headlineMedium: GoogleFonts.outfit(fontWeight: FontWeight.w700, letterSpacing: -0.4, color: Colors.white),
-                titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.3, color: Colors.white),
-                titleMedium: GoogleFonts.outfit(fontWeight: FontWeight.w600, letterSpacing: -0.2, color: Colors.white),
-                bodyLarge: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFFE5E5EA)),
-                bodyMedium: GoogleFonts.outfit(letterSpacing: -0.1, color: const Color(0xFFD1D1D6)),
+              textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme)
+                  .copyWith(
+                headlineLarge: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    color: Colors.white),
+                headlineMedium: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.4,
+                    color: Colors.white),
+                titleLarge: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
+                    color: Colors.white),
+                titleMedium: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                    color: Colors.white),
+                bodyLarge: GoogleFonts.outfit(
+                    letterSpacing: -0.1, color: const Color(0xFFE5E5EA)),
+                bodyMedium: GoogleFonts.outfit(
+                    letterSpacing: -0.1, color: const Color(0xFFD1D1D6)),
               ),
             ),
             home: const AppShell(),

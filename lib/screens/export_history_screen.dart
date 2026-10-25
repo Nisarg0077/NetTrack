@@ -6,6 +6,13 @@ import '../models/export_history_item.dart';
 import '../services/export_service.dart';
 import '../services/settings_service.dart';
 
+import '../core/widgets/glass_card.dart';
+import '../core/widgets/ambient_background.dart';
+import '../core/design_system/glass_toolbar.dart';
+import '../core/design_system/floating_pill.dart';
+import '../core/platform/platform_service.dart';
+import '../core/theme/app_spacing.dart';
+
 class ExportHistoryScreen extends StatefulWidget {
   const ExportHistoryScreen({super.key});
 
@@ -47,7 +54,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
   void _showActionSheet(BuildContext context, ExportHistoryItem item) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExcel = item.format == '.xlsx';
-    final Color accentColor = isExcel ? const Color(0xFF34C759) : const Color(0xFF007AFF);
+    final Color accentColor =
+        isExcel ? const Color(0xFF34C759) : const Color(0xFF007AFF);
 
     showDialog(
       context: context,
@@ -55,7 +63,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
         child: SingleChildScrollView(
           child: Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 380),
               child: ClipRRect(
@@ -65,15 +74,20 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xE61C1C1E) : const Color(0xF2FFFFFF),
+                      color: isDark
+                          ? const Color(0xE61C1C1E)
+                          : const Color(0xF2FFFFFF),
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(
-                        color: isDark ? const Color(0x2EFFFFFF) : const Color(0x24000000),
+                        color: isDark
+                            ? const Color(0x2EFFFFFF)
+                            : const Color(0x24000000),
                         width: 0.8,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.4 : 0.12),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
@@ -91,7 +105,9 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                           ),
                           child: Center(
                             child: Icon(
-                              isExcel ? CupertinoIcons.table_badge_more_fill : CupertinoIcons.doc_text_fill,
+                              isExcel
+                                  ? CupertinoIcons.table_badge_more_fill
+                                  : CupertinoIcons.doc_text_fill,
                               color: accentColor,
                               size: 26,
                             ),
@@ -104,7 +120,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
-                            color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                            color:
+                                isDark ? Colors.white : const Color(0xFF1C1C1E),
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
@@ -124,7 +141,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                         _buildActionRow(
                           icon: CupertinoIcons.arrow_up_right_square,
                           title: 'Open File',
-                          color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                          color:
+                              isDark ? Colors.white : const Color(0xFF1C1C1E),
                           isDark: isDark,
                           onTap: () {
                             Navigator.pop(dialogCtx);
@@ -135,7 +153,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                         _buildActionRow(
                           icon: CupertinoIcons.share,
                           title: 'Share File',
-                          color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                          color:
+                              isDark ? Colors.white : const Color(0xFF1C1C1E),
                           isDark: isDark,
                           onTap: () {
                             Navigator.pop(dialogCtx);
@@ -157,7 +176,9 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: CupertinoButton(
-                            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                            color: isDark
+                                ? const Color(0xFF2C2C2E)
+                                : const Color(0xFFE5E5EA),
                             borderRadius: BorderRadius.circular(14),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             onPressed: () => Navigator.pop(dialogCtx),
@@ -166,7 +187,9 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1C1C1E),
                               ),
                             ),
                           ),
@@ -198,7 +221,9 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E).withValues(alpha: 0.6) : const Color(0xFFF2F2F7),
+            color: isDark
+                ? const Color(0xFF2C2C2E).withValues(alpha: 0.6)
+                : const Color(0xFFF2F2F7),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isDark ? const Color(0x1AFFFFFF) : const Color(0x14000000),
@@ -219,7 +244,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                   ),
                 ),
               ),
-              const Icon(CupertinoIcons.chevron_right, size: 14, color: Color(0xFF8E8E93)),
+              const Icon(CupertinoIcons.chevron_right,
+                  size: 14, color: Color(0xFF8E8E93)),
             ],
           ),
         ),
@@ -236,7 +262,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
         child: SingleChildScrollView(
           child: Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 380),
               child: ClipRRect(
@@ -246,15 +273,20 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xE61C1C1E) : const Color(0xF2FFFFFF),
+                      color: isDark
+                          ? const Color(0xE61C1C1E)
+                          : const Color(0xF2FFFFFF),
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(
-                        color: isDark ? const Color(0x2EFFFFFF) : const Color(0x24000000),
+                        color: isDark
+                            ? const Color(0x2EFFFFFF)
+                            : const Color(0x24000000),
                         width: 0.8,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.45 : 0.12),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
@@ -267,11 +299,13 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF3B30).withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFFFF3B30).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Center(
-                            child: Icon(CupertinoIcons.trash_fill, color: Color(0xFFFF3B30), size: 26),
+                            child: Icon(CupertinoIcons.trash_fill,
+                                color: Color(0xFFFF3B30), size: 26),
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -281,7 +315,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
-                            color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                            color:
+                                isDark ? Colors.white : const Color(0xFF1C1C1E),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -290,7 +325,9 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12.5,
-                            color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                            color: isDark
+                                ? const Color(0xFF8E8E93)
+                                : const Color(0xFF6E6E73),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -298,16 +335,21 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                           children: [
                             Expanded(
                               child: CupertinoButton(
-                                color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                                color: isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : const Color(0xFFE5E5EA),
                                 borderRadius: BorderRadius.circular(14),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 onPressed: () => Navigator.pop(dialogCtx),
                                 child: Text(
                                   'Cancel',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1C1C1E),
                                   ),
                                 ),
                               ),
@@ -317,7 +359,8 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
                               child: CupertinoButton(
                                 color: const Color(0xFFFF3B30),
                                 borderRadius: BorderRadius.circular(14),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 onPressed: () {
                                   Navigator.pop(dialogCtx);
                                   _clearAll();
@@ -352,165 +395,235 @@ class _ExportHistoryScreenState extends State<ExportHistoryScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
-      body: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-        slivers: [
-          CupertinoSliverNavigationBar(
-            largeTitle: const Text('Export History'),
-            backgroundColor: isDark
-                ? const Color(0x99000000)
-                : const Color(0x99F2F2F7),
-            border: null,
-            trailing: _history.isNotEmpty
-                ? CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: const Icon(CupertinoIcons.trash, size: 20, color: CupertinoColors.destructiveRed),
-                    onPressed: () => _showClearAllDialog(context),
-                  )
-                : null,
-          ),
-          if (_isLoading)
-            const SliverFillRemaining(
-              child: Center(child: CupertinoActivityIndicator(radius: 14)),
-            )
-          else if (_history.isEmpty)
-            SliverFillRemaining(
-              child: Center(
+      body: AmbientBackground(
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
+          slivers: [
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: SliverGlassToolbarDelegate(
+                height: MediaQuery.of(context).padding.top +
+                    (PlatformService.isDesktop ? 54.0 : 62.0),
+                child: SafeArea(
+                  bottom: false,
+                  child: GlassToolbar(
+                    useSafeArea: false,
+                    margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+                    title: 'Export History',
+                    leading: FloatingActionPill(
+                      icon: CupertinoIcons.back,
+                      isCompact: true,
+                      iconSize: 17,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    statusWidget: ConnectionStatusPill(
+                      label: '${_history.length} Reports',
+                      color: const Color(0xFF34C759),
+                      isLive: false,
+                    ),
+                    actions: [
+                      if (_history.isNotEmpty)
+                        FloatingActionPill(
+                          icon: CupertinoIcons.trash,
+                          label: 'Clear All',
+                          isDestructive: true,
+                          onPressed: () => _showClearAllDialog(context),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(child: CupertinoActivityIndicator(radius: 14)),
+              )
+            else if (_history.isEmpty)
+              SliverFillRemaining(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: GlassCard(
+                      borderRadius: BorderRadius.circular(24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 40),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withValues(alpha: 0.05),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              CupertinoIcons.archivebox,
+                              size: 48,
+                              color: isDark
+                                  ? const Color(0xFF8E8E93)
+                                  : const Color(0xFF8E8E93),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No Exported Reports Yet',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Exported CSV or Excel files will appear here.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isDark
+                                  ? const Color(0xFF8E8E93)
+                                  : const Color(0xFF8E8E93),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverLayoutBuilder(
+                builder: (context, constraints) {
+                  final isDesktop = constraints.crossAxisExtent >= 768;
+                  final horizontalPadding =
+                      isDesktop ? AppSpacing.xl : AppSpacing.md;
+                  final bottomPadding = isDesktop ? 60.0 : 120.0;
+
+                  if (isDesktop) {
+                    return SliverPadding(
+                      padding: EdgeInsets.fromLTRB(horizontalPadding, 12,
+                          horizontalPadding, bottomPadding),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 480,
+                          mainAxisExtent: 96,
+                          crossAxisSpacing: AppSpacing.md,
+                          mainAxisSpacing: AppSpacing.md,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => _buildHistoryCard(
+                              context, _history[index], isDark, theme),
+                          childCount: _history.length,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return SliverPadding(
+                    padding: EdgeInsets.fromLTRB(horizontalPadding, 12,
+                        horizontalPadding, bottomPadding),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _buildHistoryCard(
+                              context, _history[index], isDark, theme),
+                        ),
+                        childCount: _history.length,
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(BuildContext context, ExportHistoryItem item,
+      bool isDark, ThemeData theme) {
+    final isExcel = item.format == '.xlsx';
+
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: () => _exportService.openFile(item.filePath),
+        onLongPress: () => _showActionSheet(context, item),
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isExcel
+                      ? const Color(0xFF34C759)
+                          .withValues(alpha: isDark ? 0.2 : 0.12)
+                      : const Color(0xFF007AFF)
+                          .withValues(alpha: isDark ? 0.2 : 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isExcel
+                      ? CupertinoIcons.table_badge_more_fill
+                      : CupertinoIcons.doc_text_fill,
+                  color: isExcel
+                      ? const Color(0xFF34C759)
+                      : const Color(0xFF007AFF),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        CupertinoIcons.archivebox,
-                        size: 48,
-                        color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Text(
-                      'No Exported Reports Yet',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
-                      ),
+                      item.fileName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 3),
                     Text(
-                      'Exported CSV or Excel files will appear here.',
+                      '${item.format.toUpperCase().replaceAll(".", "")} • ${item.totalBytesFormatted}  •  ${item.dateRangeLabel}',
                       style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      DateFormat('MMM d, yyyy  h:mm a')
+                          .format(item.generatedAt),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF8E8E93),
                       ),
                     ),
                   ],
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = _history[index];
-                    final isExcel = item.format == '.xlsx';
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _exportService.openFile(item.filePath),
-                          onLongPress: () => _showActionSheet(context, item),
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
-                                width: 0.8,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: isExcel
-                                        ? const Color(0xFF34C759).withValues(alpha: isDark ? 0.2 : 0.12)
-                                        : const Color(0xFF007AFF).withValues(alpha: isDark ? 0.2 : 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    isExcel ? CupertinoIcons.table_badge_more_fill : CupertinoIcons.doc_text_fill,
-                                    color: isExcel ? const Color(0xFF34C759) : const Color(0xFF007AFF),
-                                    size: 22,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.fileName,
-                                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        '${item.format.toUpperCase().replaceAll(".", "")} • ${item.totalBytesFormatted}  •  ${item.dateRangeLabel}',
-                                        style: TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        DateFormat('MMM d, yyyy  h:mm a').format(item.generatedAt),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  child: const Icon(CupertinoIcons.ellipsis, size: 20, color: Color(0xFF8E8E93)),
-                                  onPressed: () => _showActionSheet(context, item),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: _history.length,
-                ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: const Icon(CupertinoIcons.ellipsis,
+                    size: 20, color: Color(0xFF8E8E93)),
+                onPressed: () => _showActionSheet(context, item),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

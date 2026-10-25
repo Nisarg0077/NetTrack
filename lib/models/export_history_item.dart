@@ -36,7 +36,8 @@ class ExportHistoryItem {
       filePath: json['filePath'] as String,
       format: json['format'] as String,
       dateRangeLabel: json['dateRangeLabel'] as String,
-      generatedAt: DateTime.tryParse(json['generatedAt'] as String) ?? DateTime.now(),
+      generatedAt:
+          DateTime.tryParse(json['generatedAt'] as String) ?? DateTime.now(),
       totalBytesFormatted: json['totalBytesFormatted'] as String,
     );
   }

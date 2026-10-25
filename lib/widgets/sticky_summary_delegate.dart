@@ -18,7 +18,8 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
     required this.activeAppsCount,
     required this.peakHour,
     this.expandedHeight = 380,
-    this.collapsedHeight = kToolbarHeight + 32, // Accommodate standard app bar plus some padding
+    this.collapsedHeight =
+        kToolbarHeight + 32, // Accommodate standard app bar plus some padding
   });
 
   @override
@@ -30,10 +31,10 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant StickySummaryDelegate oldDelegate) {
     return totalBytes != oldDelegate.totalBytes ||
-           txBytes != oldDelegate.txBytes ||
-           rxBytes != oldDelegate.rxBytes ||
-           activeAppsCount != oldDelegate.activeAppsCount ||
-           peakHour != oldDelegate.peakHour;
+        txBytes != oldDelegate.txBytes ||
+        rxBytes != oldDelegate.rxBytes ||
+        activeAppsCount != oldDelegate.activeAppsCount ||
+        peakHour != oldDelegate.peakHour;
   }
 
   String _formatPeakHour(int hour) {
@@ -44,12 +45,14 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // 0.0 means fully expanded, 1.0 means fully collapsed
-    final shrinkPercentage = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+    final shrinkPercentage =
+        (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
 
     return ClipRect(
       child: BackdropFilter(
@@ -59,12 +62,17 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark 
-              ? Color.lerp(theme.scaffoldBackgroundColor, const Color(0xFF1E293B).withValues(alpha: 0.85), shrinkPercentage)
-              : Color.lerp(theme.scaffoldBackgroundColor, Colors.white.withValues(alpha: 0.85), shrinkPercentage),
+            color: isDark
+                ? Color.lerp(
+                    theme.scaffoldBackgroundColor,
+                    const Color(0xFF1E293B).withValues(alpha: 0.85),
+                    shrinkPercentage)
+                : Color.lerp(theme.scaffoldBackgroundColor,
+                    Colors.white.withValues(alpha: 0.85), shrinkPercentage),
             border: Border(
               bottom: BorderSide(
-                color: theme.dividerColor.withValues(alpha: shrinkPercentage * 0.2),
+                color: theme.dividerColor
+                    .withValues(alpha: shrinkPercentage * 0.2),
                 width: 1,
               ),
             ),
@@ -78,14 +86,22 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                 Opacity(
                   opacity: (1 - shrinkPercentage * 2).clamp(0.0, 1.0),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
                         gradient: LinearGradient(
                           colors: isDark
-                              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                              : [theme.colorScheme.primary.withValues(alpha: 0.1), Colors.white],
+                              ? [
+                                  const Color(0xFF1E293B),
+                                  const Color(0xFF0F172A)
+                                ]
+                              : [
+                                  theme.colorScheme.primary
+                                      .withValues(alpha: 0.1),
+                                  Colors.white
+                                ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -93,13 +109,16 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                             ? []
                             : [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.1),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 )
                               ],
                         border: Border.all(
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.white,
                           width: 1,
                         ),
                       ),
@@ -118,9 +137,11 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Text(
@@ -144,7 +165,9 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                                   child: TweenAnimationBuilder<double>(
                                     tween: Tween<double>(
                                       begin: 0,
-                                      end: totalBytes == 0 ? 0 : rxBytes / totalBytes,
+                                      end: totalBytes == 0
+                                          ? 0
+                                          : rxBytes / totalBytes,
                                     ),
                                     duration: const Duration(milliseconds: 600),
                                     curve: Curves.easeOutCubic,
@@ -152,7 +175,9 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                                       return CircularProgressIndicator(
                                         value: value,
                                         strokeWidth: 10,
-                                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                        backgroundColor: theme
+                                            .colorScheme.primary
+                                            .withValues(alpha: 0.15),
                                         color: theme.colorScheme.primary,
                                         strokeCap: StrokeCap.round,
                                       );
@@ -164,7 +189,8 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                                   children: [
                                     Text(
                                       'TOTAL',
-                                      style: theme.textTheme.labelSmall?.copyWith(
+                                      style:
+                                          theme.textTheme.labelSmall?.copyWith(
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 1.2,
                                         color: theme.textTheme.bodySmall?.color,
@@ -173,7 +199,8 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                                     const SizedBox(height: 4),
                                     Text(
                                       FormatUtils.formatBytes(totalBytes),
-                                      style: theme.textTheme.titleLarge?.copyWith(
+                                      style:
+                                          theme.textTheme.titleLarge?.copyWith(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -185,9 +212,20 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                _buildExpandedStatItem(context, 'Downloaded', rxBytes, Icons.download_rounded, const Color(0xFF10B981)),
-                                _buildExpandedStatItem(context, 'Uploaded', txBytes, Icons.upload_rounded, const Color(0xFFF59E0B)),
-                                _buildExpandedPeakItem(context, _formatPeakHour(peakHour)),
+                                _buildExpandedStatItem(
+                                    context,
+                                    'Downloaded',
+                                    rxBytes,
+                                    Icons.download_rounded,
+                                    const Color(0xFF10B981)),
+                                _buildExpandedStatItem(
+                                    context,
+                                    'Uploaded',
+                                    txBytes,
+                                    Icons.upload_rounded,
+                                    const Color(0xFFF59E0B)),
+                                _buildExpandedPeakItem(
+                                    context, _formatPeakHour(peakHour)),
                               ],
                             ),
                           ],
@@ -196,7 +234,7 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                     ),
                   ),
                 ),
-                
+
                 // Collapsed State (Fades in)
                 Opacity(
                   opacity: ((shrinkPercentage - 0.5) * 2).clamp(0.0, 1.0),
@@ -213,7 +251,8 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                             children: [
                               Text(
                                 'Total Usage',
-                                style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                               Text(
                                 FormatUtils.formatBytes(totalBytes),
@@ -227,9 +266,17 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              _buildCollapsedStat(context, rxBytes, Icons.download_rounded, const Color(0xFF10B981)),
+                              _buildCollapsedStat(
+                                  context,
+                                  rxBytes,
+                                  Icons.download_rounded,
+                                  const Color(0xFF10B981)),
                               const SizedBox(width: 16),
-                              _buildCollapsedStat(context, txBytes, Icons.upload_rounded, const Color(0xFFF59E0B)),
+                              _buildCollapsedStat(
+                                  context,
+                                  txBytes,
+                                  Icons.upload_rounded,
+                                  const Color(0xFFF59E0B)),
                             ],
                           ),
                         ],
@@ -245,7 +292,8 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildExpandedStatItem(BuildContext context, String label, int bytes, IconData icon, Color color) {
+  Widget _buildExpandedStatItem(BuildContext context, String label, int bytes,
+      IconData icon, Color color) {
     return Expanded(
       child: Column(
         children: [
@@ -263,7 +311,13 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
             fit: BoxFit.scaleDown,
             child: Text(
               label,
-              style: TextStyle(fontSize: 10, color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7)),
+              style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.color
+                      ?.withValues(alpha: 0.7)),
               maxLines: 1,
             ),
           ),
@@ -271,13 +325,14 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
       ),
     );
   }
-  
+
   Widget _buildExpandedPeakItem(BuildContext context, String peakText) {
     const color = Color(0xFFEF4444);
     return Expanded(
       child: Column(
         children: [
-          const Icon(Icons.local_fire_department_rounded, color: color, size: 20),
+          const Icon(Icons.local_fire_department_rounded,
+              color: color, size: 20),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -291,7 +346,13 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
             fit: BoxFit.scaleDown,
             child: Text(
               'Peak Usage',
-              style: TextStyle(fontSize: 10, color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7)),
+              style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.color
+                      ?.withValues(alpha: 0.7)),
               maxLines: 1,
             ),
           ),
@@ -300,7 +361,8 @@ class StickySummaryDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildCollapsedStat(BuildContext context, int bytes, IconData icon, Color color) {
+  Widget _buildCollapsedStat(
+      BuildContext context, int bytes, IconData icon, Color color) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -10,4 +10,9 @@ class FormatUtils {
     }
     return '${b.toStringAsFixed(decimals)} ${suffixes[i]}';
   }
+
+  static String formatSpeed(double bytesPerSec, {int decimals = 1}) {
+    if (bytesPerSec <= 0) return "0 B/s";
+    return '${formatBytes(bytesPerSec.toInt(), decimals: decimals)}/s';
+  }
 }

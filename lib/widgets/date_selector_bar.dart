@@ -4,11 +4,13 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/data_provider.dart';
 import '../services/settings_service.dart';
+import '../core/design_system/floating_pill.dart';
 
 class DateSelectorBar extends StatelessWidget {
   const DateSelectorBar({super.key});
 
-  Future<void> _pickDate(BuildContext context, DataProvider dataProvider) async {
+  Future<void> _pickDate(
+      BuildContext context, DataProvider dataProvider) async {
     final firstDate = await SettingsService().getAppInstallationDate();
     final now = DateTime.now();
     final initialDate = dataProvider.selectedDate ?? now;
@@ -42,8 +44,10 @@ class DateSelectorBar extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     String customDateLabel = 'Custom Date';
-    if (selectedRange == DateRange.custom && dataProvider.selectedDate != null) {
-      customDateLabel = DateFormat('MMM d, yyyy').format(dataProvider.selectedDate!);
+    if (selectedRange == DateRange.custom &&
+        dataProvider.selectedDate != null) {
+      customDateLabel =
+          DateFormat('MMM d, yyyy').format(dataProvider.selectedDate!);
     }
 
     return SingleChildScrollView(
@@ -51,56 +55,49 @@ class DateSelectorBar extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
-          _buildPill(
-            context: context,
+          _buildItem(
             label: 'Today',
             isSelected: selectedRange == DateRange.today,
             isDark: isDark,
             onTap: () => dataProvider.setDateRange(DateRange.today),
           ),
           const SizedBox(width: 8),
-          _buildPill(
-            context: context,
+          _buildItem(
             label: 'Yesterday',
             isSelected: selectedRange == DateRange.yesterday,
             isDark: isDark,
             onTap: () => dataProvider.setDateRange(DateRange.yesterday),
           ),
           const SizedBox(width: 8),
-          _buildPill(
-            context: context,
+          _buildItem(
             label: '2 Days Ago',
             isSelected: selectedRange == DateRange.twoDaysAgo,
             isDark: isDark,
             onTap: () => dataProvider.setDateRange(DateRange.twoDaysAgo),
           ),
           const SizedBox(width: 8),
-          _buildPill(
-            context: context,
+          _buildItem(
             label: 'This Week',
             isSelected: selectedRange == DateRange.thisWeek,
             isDark: isDark,
             onTap: () => dataProvider.setDateRange(DateRange.thisWeek),
           ),
           const SizedBox(width: 8),
-          _buildPill(
-            context: context,
+          _buildItem(
             label: 'Last Week',
             isSelected: selectedRange == DateRange.lastWeek,
             isDark: isDark,
             onTap: () => dataProvider.setDateRange(DateRange.lastWeek),
           ),
           const SizedBox(width: 8),
-          _buildPill(
-            context: context,
+          _buildItem(
             label: 'This Month',
             isSelected: selectedRange == DateRange.thisMonth,
             isDark: isDark,
             onTap: () => dataProvider.setDateRange(DateRange.thisMonth),
           ),
           const SizedBox(width: 8),
-          _buildPill(
-            context: context,
+          _buildItem(
             label: customDateLabel,
             icon: CupertinoIcons.calendar,
             isSelected: selectedRange == DateRange.custom,
@@ -112,78 +109,47 @@ class DateSelectorBar extends StatelessWidget {
     );
   }
 
-  Widget _buildPill({
-    required BuildContext context,
+  Widget _buildItem({
     required String label,
     required bool isSelected,
     required bool isDark,
     required VoidCallback onTap,
     IconData? icon,
   }) {
-    final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-
-    return GestureDetector(
+    return FloatingPill(
+      isSelected: isSelected,
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? primaryColor
-              : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF)),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? primaryColor
-                : (isDark ? const Color(0x2EFFFFFF) : const Color(0x1A000000)),
-            width: 0.8,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: isDark ? 0.35 : 0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
-                  )
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: 14,
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73)),
-              ),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                letterSpacing: -0.2,
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? const Color(0xFFE5E5EA) : const Color(0xFF1C1C1E)),
-              ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              size: 13.5,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark
+                      ? const Color(0xFF8E8E93)
+                      : const Color(0xFF6E6E73)),
             ),
+            const SizedBox(width: 5),
           ],
-        ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              letterSpacing: -0.2,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark
+                      ? const Color(0xFFE5E5EA)
+                      : const Color(0xFF1C1C1E)),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-

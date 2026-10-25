@@ -32,7 +32,8 @@ class UpdateDialog extends StatelessWidget {
       child: SingleChildScrollView(
         child: Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: ClipRRect(
@@ -42,15 +43,20 @@ class UpdateDialog extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(22, 26, 22, 20),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xE61C1C1E) : const Color(0xF2FFFFFF),
+                    color: isDark
+                        ? const Color(0xE61C1C1E)
+                        : const Color(0xF2FFFFFF),
                     borderRadius: BorderRadius.circular(26),
                     border: Border.all(
-                      color: isDark ? const Color(0x2EFFFFFF) : const Color(0x24000000),
+                      color: isDark
+                          ? const Color(0x2EFFFFFF)
+                          : const Color(0x24000000),
                       width: 0.8,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.14),
+                        color: Colors.black
+                            .withValues(alpha: isDark ? 0.45 : 0.14),
                         blurRadius: 32,
                         offset: const Offset(0, 12),
                       ),
@@ -75,14 +81,16 @@ class UpdateDialog extends StatelessWidget {
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF007AFF).withValues(alpha: 0.4),
+                              color: const Color(0xFF007AFF)
+                                  .withValues(alpha: 0.4),
                               blurRadius: 18,
                               offset: const Offset(0, 6),
                             ),
                           ],
                         ),
                         child: const Center(
-                          child: Icon(CupertinoIcons.sparkles, color: Colors.white, size: 28),
+                          child: Icon(CupertinoIcons.sparkles,
+                              color: Colors.white, size: 28),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -92,14 +100,17 @@ class UpdateDialog extends StatelessWidget {
                           fontSize: 19,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.4,
-                          color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                          color:
+                              isDark ? Colors.white : const Color(0xFF1C1C1E),
                         ),
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                          color: primaryColor.withValues(
+                              alpha: isDark ? 0.2 : 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -107,7 +118,9 @@ class UpdateDialog extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isDark ? const Color(0xFF0A84FF) : const Color(0xFF007AFF),
+                            color: isDark
+                                ? const Color(0xFF0A84FF)
+                                : const Color(0xFF007AFF),
                           ),
                         ),
                       ),
@@ -123,7 +136,9 @@ class UpdateDialog extends StatelessWidget {
                                 : const Color(0xFFF2F2F7),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isDark ? const Color(0x1AFFFFFF) : const Color(0x14000000),
+                              color: isDark
+                                  ? const Color(0x1AFFFFFF)
+                                  : const Color(0x14000000),
                               width: 0.8,
                             ),
                           ),
@@ -134,7 +149,9 @@ class UpdateDialog extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12.5,
                                 height: 1.45,
-                                color: isDark ? const Color(0xFFE5E5EA) : const Color(0xFF3A3A3C),
+                                color: isDark
+                                    ? const Color(0xFFE5E5EA)
+                                    : const Color(0xFF3A3A3C),
                               ),
                               textAlign: TextAlign.start,
                             ),
@@ -147,7 +164,9 @@ class UpdateDialog extends StatelessWidget {
                         children: [
                           Expanded(
                             child: CupertinoButton(
-                              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                              color: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFE5E5EA),
                               borderRadius: BorderRadius.circular(14),
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               onPressed: () => Navigator.of(context).pop(),
@@ -156,7 +175,9 @@ class UpdateDialog extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1C1C1E),
                                 ),
                               ),
                             ),
@@ -177,7 +198,8 @@ class UpdateDialog extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(14),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF007AFF).withValues(alpha: 0.35),
+                                    color: const Color(0xFF007AFF)
+                                        .withValues(alpha: 0.35),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -186,7 +208,8 @@ class UpdateDialog extends StatelessWidget {
                               child: CupertinoButton(
                                 color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(14),
-                                padding: const EdgeInsets.symmetric(vertical: 13),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 13),
                                 onPressed: () {
                                   _launchUrl();
                                   Navigator.of(context).pop();
@@ -194,7 +217,8 @@ class UpdateDialog extends StatelessWidget {
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(CupertinoIcons.arrow_down_circle_fill, size: 18, color: Colors.white),
+                                    Icon(CupertinoIcons.arrow_down_circle_fill,
+                                        size: 18, color: Colors.white),
                                     SizedBox(width: 6),
                                     Text(
                                       'Download & Update',

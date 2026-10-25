@@ -149,7 +149,8 @@ class ExportService {
     sheet.setColumnWidth(6, 16.0); // Usage Time (s)
 
     // Row 0: NetTrack Title & Timestamp
-    var titleCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
+    var titleCell =
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
     titleCell.value = TextCellValue("NetTrack - $reportTypeLabel");
     titleCell.cellStyle = CellStyle(
       bold: true,
@@ -157,17 +158,20 @@ class ExportService {
       fontColorHex: ExcelColor.fromHexString('#1A237E'),
     );
 
-    var timeCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0));
+    var timeCell =
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0));
     timeCell.value = TextCellValue("Generated: $timestampStr");
     timeCell.cellStyle = CellStyle(italic: true, fontSize: 10);
 
     // Row 1: Date Range
-    var rangeCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1));
+    var rangeCell =
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1));
     rangeCell.value = TextCellValue("Period: $dateRangeLabel");
     rangeCell.cellStyle = CellStyle(bold: true, fontSize: 12);
 
     // Row 2: Summary Stats
-    var sumCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2));
+    var sumCell =
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2));
     final dlMb = (totalRx / (1024 * 1024)).toStringAsFixed(2);
     final ulMb = (totalTx / (1024 * 1024)).toStringAsFixed(2);
     final totMb = (totalCombined / (1024 * 1024)).toStringAsFixed(2);
@@ -188,14 +192,16 @@ class ExportService {
 
     int headerRow = 4;
     for (int col = 0; col < headers.length; col++) {
-      var cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: headerRow));
+      var cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: headerRow));
       cell.value = TextCellValue(headers[col]);
       cell.cellStyle = CellStyle(
         bold: true,
         fontSize: 11,
         fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
         backgroundColorHex: ExcelColor.fromHexString('#1A237E'),
-        horizontalAlign: col >= 2 ? HorizontalAlign.Right : HorizontalAlign.Left,
+        horizontalAlign:
+            col >= 2 ? HorizontalAlign.Right : HorizontalAlign.Left,
       );
     }
 
@@ -206,36 +212,73 @@ class ExportService {
       final rxMbVal = usage.rxBytes / (1024 * 1024);
       final txMbVal = usage.txBytes / (1024 * 1024);
       final totMbVal = usage.totalBytes / (1024 * 1024);
-      final pct = totalCombined == 0 ? 0.0 : (usage.totalBytes / totalCombined) * 100.0;
+      final pct =
+          totalCombined == 0 ? 0.0 : (usage.totalBytes / totalCombined) * 100.0;
 
       final bool isAlt = (i % 2 == 1);
       final bgColor = isAlt
           ? ExcelColor.fromHexString('#F5F5F5')
           : ExcelColor.fromHexString('#FFFFFF');
 
-      _setCell(sheet, 0, rowIdx, TextCellValue(usage.appName), bgColor, HorizontalAlign.Left);
-      _setCell(sheet, 1, rowIdx, TextCellValue(usage.packageName), bgColor, HorizontalAlign.Left);
-      _setCell(sheet, 2, rowIdx, DoubleCellValue(double.parse(rxMbVal.toStringAsFixed(2))), bgColor, HorizontalAlign.Right);
-      _setCell(sheet, 3, rowIdx, DoubleCellValue(double.parse(txMbVal.toStringAsFixed(2))), bgColor, HorizontalAlign.Right);
-      _setCell(sheet, 4, rowIdx, DoubleCellValue(double.parse(totMbVal.toStringAsFixed(2))), bgColor, HorizontalAlign.Right);
-      _setCell(sheet, 5, rowIdx, TextCellValue("${pct.toStringAsFixed(1)}%"), bgColor, HorizontalAlign.Center);
-      _setCell(sheet, 6, rowIdx, IntCellValue(0), bgColor, HorizontalAlign.Right);
+      _setCell(sheet, 0, rowIdx, TextCellValue(usage.appName), bgColor,
+          HorizontalAlign.Left);
+      _setCell(sheet, 1, rowIdx, TextCellValue(usage.packageName), bgColor,
+          HorizontalAlign.Left);
+      _setCell(
+          sheet,
+          2,
+          rowIdx,
+          DoubleCellValue(double.parse(rxMbVal.toStringAsFixed(2))),
+          bgColor,
+          HorizontalAlign.Right);
+      _setCell(
+          sheet,
+          3,
+          rowIdx,
+          DoubleCellValue(double.parse(txMbVal.toStringAsFixed(2))),
+          bgColor,
+          HorizontalAlign.Right);
+      _setCell(
+          sheet,
+          4,
+          rowIdx,
+          DoubleCellValue(double.parse(totMbVal.toStringAsFixed(2))),
+          bgColor,
+          HorizontalAlign.Right);
+      _setCell(sheet, 5, rowIdx, TextCellValue("${pct.toStringAsFixed(1)}%"),
+          bgColor, HorizontalAlign.Center);
+      _setCell(
+          sheet, 6, rowIdx, IntCellValue(0), bgColor, HorizontalAlign.Right);
     }
 
     // Row N+1: Summary Row
     int totalRowIdx = 5 + usages.length;
     final totalBg = ExcelColor.fromHexString('#E8EAF6');
-    _setCell(sheet, 0, totalRowIdx, TextCellValue("TOTAL"), totalBg, HorizontalAlign.Left, bold: true);
-    _setCell(sheet, 1, totalRowIdx, TextCellValue(""), totalBg, HorizontalAlign.Left);
-    _setCell(sheet, 2, totalRowIdx, DoubleCellValue(double.parse(dlMb)), totalBg, HorizontalAlign.Right, bold: true);
-    _setCell(sheet, 3, totalRowIdx, DoubleCellValue(double.parse(ulMb)), totalBg, HorizontalAlign.Right, bold: true);
-    _setCell(sheet, 4, totalRowIdx, DoubleCellValue(double.parse(totMb)), totalBg, HorizontalAlign.Right, bold: true);
-    _setCell(sheet, 5, totalRowIdx, TextCellValue("100.0%"), totalBg, HorizontalAlign.Center, bold: true);
-    _setCell(sheet, 6, totalRowIdx, TextCellValue("-"), totalBg, HorizontalAlign.Right, bold: true);
+    _setCell(sheet, 0, totalRowIdx, TextCellValue("TOTAL"), totalBg,
+        HorizontalAlign.Left,
+        bold: true);
+    _setCell(sheet, 1, totalRowIdx, TextCellValue(""), totalBg,
+        HorizontalAlign.Left);
+    _setCell(sheet, 2, totalRowIdx, DoubleCellValue(double.parse(dlMb)),
+        totalBg, HorizontalAlign.Right,
+        bold: true);
+    _setCell(sheet, 3, totalRowIdx, DoubleCellValue(double.parse(ulMb)),
+        totalBg, HorizontalAlign.Right,
+        bold: true);
+    _setCell(sheet, 4, totalRowIdx, DoubleCellValue(double.parse(totMb)),
+        totalBg, HorizontalAlign.Right,
+        bold: true);
+    _setCell(sheet, 5, totalRowIdx, TextCellValue("100.0%"), totalBg,
+        HorizontalAlign.Center,
+        bold: true);
+    _setCell(sheet, 6, totalRowIdx, TextCellValue("-"), totalBg,
+        HorizontalAlign.Right,
+        bold: true);
 
     // Row N+3: Watermark Footer
     int footerRowIdx = totalRowIdx + 2;
-    var footCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: footerRowIdx));
+    var footCell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: footerRowIdx));
     footCell.value = TextCellValue("Generated by NetTrack v1.0.0+1");
     footCell.cellStyle = CellStyle(italic: true, fontSize: 9);
 
@@ -251,7 +294,8 @@ class ExportService {
     HorizontalAlign align, {
     bool bold = false,
   }) {
-    var cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row));
+    var cell =
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row));
     cell.value = value;
     cell.cellStyle = CellStyle(
       bold: bold,
@@ -275,9 +319,16 @@ class ExportService {
     final ulMb = (totalTx / (1024 * 1024)).toStringAsFixed(2);
     final totMb = (totalCombined / (1024 * 1024)).toStringAsFixed(2);
 
-    rows.add(["NetTrack - $reportTypeLabel", "", "", "", "Generated: $timestampStr"]);
+    rows.add([
+      "NetTrack - $reportTypeLabel",
+      "",
+      "",
+      "",
+      "Generated: $timestampStr"
+    ]);
     rows.add(["Period: $dateRangeLabel"]);
-    rows.add(["Total Combined: $totMb MB (Download: $dlMb MB | Upload: $ulMb MB)"]);
+    rows.add(
+        ["Total Combined: $totMb MB (Download: $dlMb MB | Upload: $ulMb MB)"]);
     rows.add([]); // Blank separator
     rows.add([
       "App Name",
@@ -293,9 +344,8 @@ class ExportService {
       final rxMbVal = (usage.rxBytes / (1024 * 1024)).toStringAsFixed(2);
       final txMbVal = (usage.txBytes / (1024 * 1024)).toStringAsFixed(2);
       final totMbVal = (usage.totalBytes / (1024 * 1024)).toStringAsFixed(2);
-      final pct = totalCombined == 0
-          ? 0.0
-          : (usage.totalBytes / totalCombined) * 100.0;
+      final pct =
+          totalCombined == 0 ? 0.0 : (usage.totalBytes / totalCombined) * 100.0;
 
       rows.add([
         '"${usage.appName.replaceAll('"', '""')}"',

@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'frosted_glass_card.dart';
+
+import '../core/widgets/glass_card.dart';
+import '../core/theme/app_spacing.dart';
 
 class UsageChart extends StatefulWidget {
   final List<double> dailyTrend;
   final List<double> weeklyTrend;
   final List<double> monthlyTrend;
   final bool showFilters;
-  
+  final bool enableBlur;
+
   const UsageChart({
-    super.key, 
+    super.key,
     required this.dailyTrend,
     required this.weeklyTrend,
     required this.monthlyTrend,
     this.showFilters = true,
+    this.enableBlur = true,
   });
 
   @override
@@ -41,8 +46,9 @@ class _UsageChartState extends State<UsageChart> {
     }
 
     if (currentTrend.isEmpty) {
-      return const FrostedGlassCard(
-        child: Center(child: CircularProgressIndicator()),
+      return GlassCard(
+        enableBlur: widget.enableBlur,
+        child: const Center(child: CupertinoActivityIndicator(radius: 12)),
       );
     }
 
@@ -59,13 +65,14 @@ class _UsageChartState extends State<UsageChart> {
     for (int i = 0; i < currentTrend.length; i++) {
       spots.add(FlSpot(i.toDouble(), currentTrend[i]));
     }
-    
+
     final primaryColor = Theme.of(context).colorScheme.primary;
     final surfaceColor = Theme.of(context).colorScheme.surface;
 
-    return FrostedGlassCard(
-      padding: const EdgeInsets.only(right: 20.0, left: 8.0, top: 20, bottom: 16),
-      borderRadius: 24,
+    return GlassCard(
+      enableBlur: widget.enableBlur,
+      padding:
+          const EdgeInsets.only(right: 20.0, left: 8.0, top: 20, bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -74,32 +81,43 @@ class _UsageChartState extends State<UsageChart> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(CupertinoIcons.waveform_path,
+                            color: primaryColor, size: 16),
                       ),
-                      child: Icon(Icons.show_chart_rounded, color: primaryColor, size: 16),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Usage Trends',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                      const SizedBox(width: AppSpacing.sm),
+                      Flexible(
+                        child: Text(
+                          'Usage Trends',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.2,
+                                  ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 if (widget.showFilters)
                   Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -114,35 +132,49 @@ class _UsageChartState extends State<UsageChart> {
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppSpacing.xl),
           Expanded(
             child: LineChart(
               LineChartData(
                 lineTouchData: LineTouchData(
                   handleBuiltInTouches: true,
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (touchedSpot) => Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                    getTooltipColor: (touchedSpot) => Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.8),
                     getTooltipItems: (List<LineBarSpot> touchedSpots) {
                       return touchedSpots.map((LineBarSpot touchedSpot) {
                         String label = '';
                         if (_selectedFilter == 1) {
-                           int value = touchedSpot.x.toInt();
-                           DateTime date = DateTime.now().subtract(Duration(days: 6 - value));
-                           label = DateFormat('MMM d, EEE').format(date);
+                          int value = touchedSpot.x.toInt();
+                          DateTime date = DateTime.now()
+                              .subtract(Duration(days: 6 - value));
+                          label = DateFormat('MMM d, EEE').format(date);
                         } else if (_selectedFilter == 0) {
-                           label = '${touchedSpot.x.toInt()}:00';
+                          label = '${touchedSpot.x.toInt()}:00';
                         } else {
-                           int value = touchedSpot.x.toInt();
-                           DateTime date = DateTime.now().subtract(Duration(days: 29 - value));
-                           label = DateFormat('MMM d').format(date);
+                          int value = touchedSpot.x.toInt();
+                          DateTime date = DateTime.now()
+                              .subtract(Duration(days: 29 - value));
+                          label = DateFormat('MMM d').format(date);
                         }
                         return LineTooltipItem(
                           '${_formatUsage(touchedSpot.y)}\n',
-                          TextStyle(color: Theme.of(context).colorScheme.surface, fontWeight: FontWeight.bold, fontSize: 14),
+                          TextStyle(
+                              color: Theme.of(context).colorScheme.surface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14),
                           children: [
                             TextSpan(
                               text: label,
-                              style: TextStyle(color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8), fontWeight: FontWeight.normal, fontSize: 12),
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surface
+                                      .withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 12),
                             ),
                           ],
                         );
@@ -156,7 +188,8 @@ class _UsageChartState extends State<UsageChart> {
                   horizontalInterval: interval,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+                      color:
+                          Theme.of(context).dividerColor.withValues(alpha: 0.2),
                       strokeWidth: 1,
                       dashArray: [8, 8], // Modern larger dash
                     );
@@ -167,52 +200,59 @@ class _UsageChartState extends State<UsageChart> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 32,
-                      interval: _selectedFilter == 0 ? 6 : (_selectedFilter == 2 ? 7 : 1),
+                      interval: _selectedFilter == 0
+                          ? 6
+                          : (_selectedFilter == 2 ? 7 : 1),
                       getTitlesWidget: (value, meta) {
                         if (_selectedFilter == 1) {
                           if (value >= 0 && value < 7) {
-                            DateTime date = DateTime.now().subtract(Duration(days: 6 - value.toInt()));
+                            DateTime date = DateTime.now()
+                                .subtract(Duration(days: 6 - value.toInt()));
                             String dayName = DateFormat('E').format(date);
                             return Padding(
                               padding: const EdgeInsets.only(top: 10.0),
-                              child: Text(
-                                dayName, 
-                                style: TextStyle(
-                                  fontSize: 12, 
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).textTheme.bodySmall?.color,
-                                )
-                              ),
+                              child: Text(dayName,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color,
+                                  )),
                             );
                           }
                         } else if (_selectedFilter == 0) {
                           if (value >= 0 && value < 24) {
                             return Padding(
                               padding: const EdgeInsets.only(top: 10.0),
-                              child: Text(
-                                '${value.toInt()}:00', 
-                                style: TextStyle(
-                                  fontSize: 12, 
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).textTheme.bodySmall?.color,
-                                )
-                              ),
+                              child: Text('${value.toInt()}:00',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color,
+                                  )),
                             );
                           }
                         } else if (_selectedFilter == 2) {
                           if (value >= 0 && value < 30) {
-                            DateTime date = DateTime.now().subtract(Duration(days: 29 - value.toInt()));
+                            DateTime date = DateTime.now()
+                                .subtract(Duration(days: 29 - value.toInt()));
                             String label = DateFormat('MMM d').format(date);
                             return Padding(
                               padding: const EdgeInsets.only(top: 10.0),
-                              child: Text(
-                                label, 
-                                style: TextStyle(
-                                  fontSize: 12, 
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).textTheme.bodySmall?.color,
-                                )
-                              ),
+                              child: Text(label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color,
+                                  )),
                             );
                           }
                         }
@@ -236,10 +276,11 @@ class _UsageChartState extends State<UsageChart> {
                         return Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: Text(
-                            _formatUsage(value), 
+                            _formatUsage(value),
                             style: TextStyle(
                               fontSize: 10,
-                              color: Theme.of(context).textTheme.bodySmall?.color,
+                              color:
+                                  Theme.of(context).textTheme.bodySmall?.color,
                               fontWeight: FontWeight.w500,
                             ),
                             textAlign: TextAlign.right,
@@ -252,7 +293,9 @@ class _UsageChartState extends State<UsageChart> {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: currentTrend.isEmpty ? 6 : (currentTrend.length - 1).toDouble(),
+                maxX: currentTrend.isEmpty
+                    ? 6
+                    : (currentTrend.length - 1).toDouble(),
                 minY: 0,
                 maxY: maxY,
                 lineBarsData: [
@@ -307,7 +350,9 @@ class _UsageChartState extends State<UsageChart> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
@@ -315,7 +360,9 @@ class _UsageChartState extends State<UsageChart> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
+            color: isSelected
+                ? Colors.white
+                : Theme.of(context).textTheme.bodySmall?.color,
           ),
         ),
       ),

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../utils/format_utils.dart';
 import 'animated_counter.dart';
-import 'frosted_glass_card.dart';
+import '../core/widgets/glass_card.dart';
+import '../core/theme/app_spacing.dart';
+import '../core/theme/app_colors.dart';
 
 class DailySummaryCard extends StatelessWidget {
   final int totalBytes;
@@ -33,46 +35,57 @@ class DailySummaryCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final primaryColor = theme.colorScheme.primary;
 
-    return FrostedGlassCard(
-      padding: const EdgeInsets.all(22.0),
-      borderRadius: 24,
+    return GlassCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: isDark ? 0.2 : 0.12),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color:
+                            primaryColor.withValues(alpha: isDark ? 0.2 : 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(CupertinoIcons.chart_pie_fill,
+                          color: primaryColor, size: 16),
                     ),
-                    child: Icon(CupertinoIcons.chart_pie_fill, color: primaryColor, size: 16),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Network Activity',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
+                    const SizedBox(width: AppSpacing.sm),
+                    Flexible(
+                      child: Text(
+                        'Network Activity',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                  color: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFE5E5EA),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(CupertinoIcons.app_fill, size: 13, color: primaryColor),
+                    Icon(CupertinoIcons.app_fill,
+                        size: 13, color: primaryColor),
                     const SizedBox(width: 5),
                     Text(
                       '$activeAppsCount Active Apps',
@@ -87,65 +100,55 @@ class DailySummaryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          
-          // Center Radial Indicator + Total Counter
-          Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 160,
-                  height: 160,
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween<double>(
-                      begin: 0,
-                      end: totalBytes == 0 ? 0 : rxBytes / totalBytes,
-                    ),
-                    duration: const Duration(milliseconds: 700),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, child) {
-                      return CircularProgressIndicator(
-                        value: value,
-                        strokeWidth: 14,
-                        backgroundColor: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : primaryColor.withValues(alpha: 0.1),
-                        color: primaryColor,
-                        strokeCap: StrokeCap.round,
-                      );
-                    },
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'TOTAL USAGE',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                        color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    AnimatedCounter(
-                      value: totalBytes.toDouble(),
-                      duration: const Duration(milliseconds: 700),
-                      formatBuilder: (value) => FormatUtils.formatBytes(value.toInt()),
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          const SizedBox(height: AppSpacing.xl),
+
+          // Modern Network Activity Block
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'TOTAL USAGE',
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
             ),
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 2),
+          AnimatedCounter(
+            value: totalBytes.toDouble(),
+            duration: const Duration(milliseconds: 700),
+            formatBuilder: (value) => FormatUtils.formatBytes(value.toInt()),
+            style: theme.textTheme.headlineLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1.5,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(
+                begin: 0.0,
+                end: totalBytes == 0 ? 0.0 : rxBytes / totalBytes,
+              ),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return LinearProgressIndicator(
+                  value: value,
+                  minHeight: 6,
+                  backgroundColor: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : primaryColor.withValues(alpha: 0.1),
+                  color: primaryColor,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
 
           // Stat Pills
           Row(
@@ -156,22 +159,22 @@ class DailySummaryCard extends StatelessWidget {
                   'Downloaded',
                   rxBytes,
                   CupertinoIcons.arrow_down_circle_fill,
-                  const Color(0xFF34C759), // Apple System Green
+                  AppColors.success,
                   isDark,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _buildStatBadge(
                   context,
                   'Uploaded',
                   txBytes,
                   CupertinoIcons.arrow_up_circle_fill,
-                  const Color(0xFFFF9500), // Apple System Orange
+                  AppColors.warning,
                   isDark,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _buildPeakBadge(
                   context,
@@ -198,23 +201,41 @@ class DailySummaryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF1C1C1E).withValues(alpha: 0.6)
-            : const Color(0xFFF2F2F7),
+            ? const Color(0xFF22222A).withValues(alpha: 0.65)
+            : Colors.white.withValues(alpha: 0.70),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0F000000),
-          width: 0.8,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.14)
+              : Colors.white.withValues(alpha: 0.90),
+          width: 0.85,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: accentColor, size: 22),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: accentColor, size: 18),
+          ),
+          const SizedBox(height: 6),
           AnimatedCounter(
             value: bytes.toDouble(),
             duration: const Duration(milliseconds: 600),
-            formatBuilder: (value) => FormatUtils.formatBytes(value.toInt(), decimals: 1),
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2),
+            formatBuilder: (value) =>
+                FormatUtils.formatBytes(value.toInt(), decimals: 1),
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2),
           ),
           const SizedBox(height: 2),
           Text(
@@ -222,7 +243,9 @@ class DailySummaryCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w500,
-              color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
             ),
           ),
         ],
@@ -231,28 +254,50 @@ class DailySummaryCard extends StatelessWidget {
   }
 
   Widget _buildPeakBadge(BuildContext context, String peakText, bool isDark) {
-    const color = Color(0xFFFF3B30); // Apple System Red
+    const color = AppColors.error;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF1C1C1E).withValues(alpha: 0.6)
-            : const Color(0xFFF2F2F7),
+            ? const Color(0xFF22222A).withValues(alpha: 0.65)
+            : Colors.white.withValues(alpha: 0.70),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0F000000),
-          width: 0.8,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.14)
+              : Colors.white.withValues(alpha: 0.90),
+          width: 0.85,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          const Icon(CupertinoIcons.flame_fill, color: color, size: 22),
-          const SizedBox(height: 8),
-          Text(
-            peakText,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: -0.2),
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child:
+                const Icon(CupertinoIcons.flame_fill, color: color, size: 18),
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              peakText,
+              maxLines: 1,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  letterSpacing: -0.2),
+            ),
           ),
           const SizedBox(height: 2),
           Text(
@@ -260,7 +305,9 @@ class DailySummaryCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w500,
-              color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
             ),
           ),
         ],
@@ -268,4 +315,3 @@ class DailySummaryCard extends StatelessWidget {
     );
   }
 }
-

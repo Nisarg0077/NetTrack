@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
@@ -48,7 +49,8 @@ class _ExportDialogState extends State<ExportDialog> {
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
         start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
         end = now;
-        label = '${DateFormat('MMM d').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
+        label =
+            '${DateFormat('MMM d').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
         break;
       case ExportPeriodOption.thisMonth:
         start = DateTime(now.year, now.month, 1);
@@ -56,9 +58,12 @@ class _ExportDialogState extends State<ExportDialog> {
         label = DateFormat('MMMM yyyy').format(now);
         break;
       case ExportPeriodOption.dateRange:
-        start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
-        end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
-        label = '${DateFormat('MMM d, yyyy').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
+        start = DateTime(_dateRange.start.year, _dateRange.start.month,
+            _dateRange.start.day);
+        end = DateTime(_dateRange.end.year, _dateRange.end.month,
+            _dateRange.end.day, 23, 59, 59);
+        label =
+            '${DateFormat('MMM d, yyyy').format(start)} – ${DateFormat('MMM d, yyyy').format(end)}';
         break;
     }
 
@@ -108,7 +113,8 @@ class _ExportDialogState extends State<ExportDialog> {
     int totalRx = 0;
     int totalTx = 0;
     if (Platform.isWindows) {
-      final networkStats = await _dataUsageService.getGeneralNetworkStats(startDate: start, endDate: end);
+      final networkStats = await _dataUsageService.getGeneralNetworkStats(
+          startDate: start, endDate: end);
       for (var stat in networkStats) {
         totalRx += stat.rxBytes;
         totalTx += stat.txBytes;
@@ -152,7 +158,8 @@ class _ExportDialogState extends State<ExportDialog> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+      backgroundColor:
+          isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -171,7 +178,8 @@ class _ExportDialogState extends State<ExportDialog> {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(CupertinoIcons.checkmark_alt, color: Color(0xFF34C759), size: 28),
+                    child: Icon(CupertinoIcons.checkmark_alt,
+                        color: Color(0xFF34C759), size: 28),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -189,7 +197,9 @@ class _ExportDialogState extends State<ExportDialog> {
                   '${item.fileName} (${item.totalBytesFormatted})',
                   style: TextStyle(
                     fontSize: 13,
-                    color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+                    color: isDark
+                        ? const Color(0xFF8E8E93)
+                        : const Color(0xFF6E6E73),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -198,7 +208,9 @@ class _ExportDialogState extends State<ExportDialog> {
                   children: [
                     Expanded(
                       child: CupertinoButton(
-                        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                        color: isDark
+                            ? const Color(0xFF2C2C2E)
+                            : const Color(0xFFE5E5EA),
                         borderRadius: BorderRadius.circular(14),
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         onPressed: () {
@@ -208,9 +220,15 @@ class _ExportDialogState extends State<ExportDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(CupertinoIcons.share, size: 18, color: isDark ? Colors.white : Colors.black),
+                            Icon(CupertinoIcons.share,
+                                size: 18,
+                                color: isDark ? Colors.white : Colors.black),
                             const SizedBox(width: 6),
-                            Text('Share', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black)),
+                            Text('Share',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        isDark ? Colors.white : Colors.black)),
                           ],
                         ),
                       ),
@@ -227,9 +245,13 @@ class _ExportDialogState extends State<ExportDialog> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(CupertinoIcons.arrow_up_right_square, size: 18, color: Colors.white),
+                            Icon(CupertinoIcons.arrow_up_right_square,
+                                size: 18, color: Colors.white),
                             SizedBox(width: 6),
-                            Text('Open File', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
+                            Text('Open File',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
                           ],
                         ),
                       ),
@@ -258,241 +280,328 @@ class _ExportDialogState extends State<ExportDialog> {
     final periodInfo = _computePeriod(_selectedOption);
     final String previewLabel = periodInfo['label'] as String;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Handle bar
-              const SizedBox(height: 10),
-              Container(
-                width: 36,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF48484A) : const Color(0xFFC7C7CC),
-                  borderRadius: BorderRadius.circular(3),
-                ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
+          ),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xE6141722) : const Color(0xF2F2F2F7),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border(
+              top: BorderSide(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.14)
+                    : Colors.black.withValues(alpha: 0.08),
+                width: 0.85,
               ),
-              const SizedBox(height: 14),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Export Data Report',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                        color: isDark ? Colors.white : const Color(0xFF1C1C1E),
-                      ),
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Handle bar
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 36,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF48484A)
+                          : const Color(0xFFC7C7CC),
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(30, 30),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          CupertinoIcons.xmark,
-                          size: 14,
-                          color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
-                        ),
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Time Period Section
-                      Text(
-                        'TIME PERIOD',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
-                            width: 0.8,
+                  ),
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Export Data Report',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                            color:
+                                isDark ? Colors.white : const Color(0xFF1C1C1E),
                           ),
                         ),
-                        child: Column(
-                          children: ExportPeriodOption.values.map((option) {
-                            final isSelected = _selectedOption == option;
-                            return Column(
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(30, 30),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withValues(alpha: 0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              CupertinoIcons.xmark,
+                              size: 14,
+                              color: isDark
+                                  ? const Color(0xFF8E8E93)
+                                  : const Color(0xFF6E6E73),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Time Period Section
+                          Text(
+                            'TIME PERIOD',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                              color: isDark
+                                  ? const Color(0xFF8E8E93)
+                                  : const Color(0xFF6E6E73),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFFFFFFF),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0x1FFFFFFF)
+                                    : const Color(0x14000000),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Column(
+                              children: ExportPeriodOption.values.map((option) {
+                                final isSelected = _selectedOption == option;
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      dense: true,
+                                      title: Text(
+                                        _getOptionTitle(option),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w500,
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF1C1C1E),
+                                        ),
+                                      ),
+                                      subtitle: _buildOptionSubtitle(option),
+                                      trailing: isSelected
+                                          ? Icon(
+                                              CupertinoIcons
+                                                  .checkmark_circle_fill,
+                                              color: primaryColor,
+                                              size: 20)
+                                          : const Icon(CupertinoIcons.circle,
+                                              color: Color(0xFF8E8E93),
+                                              size: 20),
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedOption = option;
+                                        });
+                                      },
+                                    ),
+                                    if (option !=
+                                        ExportPeriodOption.values.last)
+                                      Divider(
+                                          height: 1,
+                                          indent: 16,
+                                          endIndent: 16,
+                                          color: isDark
+                                              ? const Color(0xFF38383A)
+                                              : const Color(0xFFE5E5EA)),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Export Format Selector
+                          Text(
+                            'FORMAT',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                              color: isDark
+                                  ? const Color(0xFF8E8E93)
+                                  : const Color(0xFF6E6E73),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: CupertinoSlidingSegmentedControl<bool>(
+                              groupValue: _isExcel,
+                              backgroundColor: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFE5E5EA),
+                              children: {
+                                true: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(CupertinoIcons.table_badge_more_fill,
+                                          size: 16,
+                                          color: _isExcel
+                                              ? primaryColor
+                                              : (isDark
+                                                  ? Colors.white
+                                                  : Colors.black)),
+                                      const SizedBox(width: 6),
+                                      Text('Excel (.xlsx)',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black)),
+                                    ],
+                                  ),
+                                ),
+                                false: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(CupertinoIcons.doc_text_fill,
+                                          size: 16,
+                                          color: !_isExcel
+                                              ? primaryColor
+                                              : (isDark
+                                                  ? Colors.white
+                                                  : Colors.black)),
+                                      const SizedBox(width: 6),
+                                      Text('CSV (.csv)',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black)),
+                                    ],
+                                  ),
+                                ),
+                              },
+                              onValueChanged: (val) {
+                                if (val != null) setState(() => _isExcel = val);
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Options Container
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFFFFFFF),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0x1FFFFFFF)
+                                    : const Color(0x14000000),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: CupertinoListTile(
+                              title: const Text('Custom Destination Folder',
+                                  style: TextStyle(fontSize: 14)),
+                              subtitle: const Text(
+                                  'Prompt for save directory on export',
+                                  style: TextStyle(fontSize: 12)),
+                              trailing: CupertinoSwitch(
+                                value: _chooseSaveLocation,
+                                onChanged: (val) =>
+                                    setState(() => _chooseSaveLocation = val),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Summary Card
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withValues(
+                                  alpha: isDark ? 0.15 : 0.08),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: primaryColor.withValues(alpha: 0.25),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Row(
                               children: [
-                                ListTile(
-                                  dense: true,
-                                  title: Text(
-                                    _getOptionTitle(option),
+                                Icon(CupertinoIcons.info_circle_fill,
+                                    color: primaryColor, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Exporting $previewLabel usage for ${dataProvider.appUsages.length} apps as ${_isExcel ? "Excel" : "CSV"}.',
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      color: isDark ? Colors.white : const Color(0xFF1C1C1E),
+                                      fontSize: 12.5,
+                                      color: isDark
+                                          ? const Color(0xFFE5E5EA)
+                                          : const Color(0xFF1C1C1E),
                                     ),
                                   ),
-                                  subtitle: _buildOptionSubtitle(option),
-                                  trailing: isSelected
-                                      ? Icon(CupertinoIcons.checkmark_circle_fill, color: primaryColor, size: 20)
-                                      : const Icon(CupertinoIcons.circle, color: Color(0xFF8E8E93), size: 20),
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedOption = option;
-                                    });
-                                  },
                                 ),
-                                if (option != ExportPeriodOption.values.last)
-                                  Divider(height: 1, indent: 16, endIndent: 16, color: isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA)),
                               ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Export Format Selector
-                      Text(
-                        'FORMAT',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: CupertinoSlidingSegmentedControl<bool>(
-                          groupValue: _isExcel,
-                          backgroundColor: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-                          children: {
-                            true: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(CupertinoIcons.table_badge_more_fill, size: 16, color: _isExcel ? primaryColor : (isDark ? Colors.white : Colors.black)),
-                                  const SizedBox(width: 6),
-                                  Text('Excel (.xlsx)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isDark ? Colors.white : Colors.black)),
-                                ],
-                              ),
                             ),
-                            false: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(CupertinoIcons.doc_text_fill, size: 16, color: !_isExcel ? primaryColor : (isDark ? Colors.white : Colors.black)),
-                                  const SizedBox(width: 6),
-                                  Text('CSV (.csv)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isDark ? Colors.white : Colors.black)),
-                                ],
-                              ),
-                            ),
-                          },
-                          onValueChanged: (val) {
-                            if (val != null) setState(() => _isExcel = val);
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Options Container
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isDark ? const Color(0x1FFFFFFF) : const Color(0x14000000),
-                            width: 0.8,
                           ),
-                        ),
-                        child: CupertinoListTile(
-                          title: const Text('Custom Destination Folder', style: TextStyle(fontSize: 14)),
-                          subtitle: const Text('Prompt for save directory on export', style: TextStyle(fontSize: 12)),
-                          trailing: CupertinoSwitch(
-                            value: _chooseSaveLocation,
-                            onChanged: (val) => setState(() => _chooseSaveLocation = val),
-                          ),
-                        ),
+                          const SizedBox(height: 20),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-
-                      // Summary Card
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: isDark ? 0.15 : 0.08),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: primaryColor.withValues(alpha: 0.25),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(CupertinoIcons.info_circle_fill, color: primaryColor, size: 20),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Exporting $previewLabel usage for ${dataProvider.appUsages.length} apps as ${_isExcel ? "Excel" : "CSV"}.',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: isDark ? const Color(0xFFE5E5EA) : const Color(0xFF1C1C1E),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: CupertinoButton.filled(
-                    borderRadius: BorderRadius.circular(16),
-                    onPressed: _isExporting ? null : _runExport,
-                    child: _isExporting
-                        ? const CupertinoActivityIndicator(radius: 10, color: Colors.white)
-                        : const Text('Generate & Export Report', style: TextStyle(fontWeight: FontWeight.w700)),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: CupertinoButton.filled(
+                        borderRadius: BorderRadius.circular(16),
+                        onPressed: _isExporting ? null : _runExport,
+                        child: _isExporting
+                            ? const CupertinoActivityIndicator(
+                                radius: 10, color: Colors.white)
+                            : const Text('Generate & Export Report',
+                                style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -509,7 +618,8 @@ class _ExportDialogState extends State<ExportDialog> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(CupertinoIcons.calendar, size: 14, color: Theme.of(context).colorScheme.primary),
+              Icon(CupertinoIcons.calendar,
+                  size: 14, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 4),
               Text(
                 '${DateFormat('MMM d').format(_dateRange.start)} – ${DateFormat('MMM d, yyyy').format(_dateRange.end)}',

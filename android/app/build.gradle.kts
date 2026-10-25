@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.example.net_track"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
