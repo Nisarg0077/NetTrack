@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:fusion_ui/fusion_ui.dart';
 
 import '../providers/theme_provider.dart';
 import '../providers/data_provider.dart';
@@ -16,7 +17,6 @@ import '../services/desktop_startup_service.dart';
 import '../widgets/update_dialog.dart';
 import 'export_history_screen.dart';
 
-import '../core/widgets/glass_card.dart';
 import '../core/design_system/glass_toolbar.dart';
 import '../core/design_system/floating_pill.dart';
 import '../core/theme/app_colors.dart';
@@ -242,7 +242,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 iconColor: const Color(0xFF5856D6),
                 title: 'Dark Theme',
                 subtitle: 'Toggle dark/light interface',
-                trailing: CupertinoSwitch(
+                trailing: FusionSwitch(
                   value: themeProvider.isDarkMode,
                   onChanged: (bool value) => themeProvider.toggleTheme(),
                 ),
@@ -255,7 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   iconColor: const Color(0xFF007AFF),
                   title: 'Run at Startup',
                   subtitle: 'Launch NetTrack on system boot',
-                  trailing: CupertinoSwitch(
+                  trailing: FusionSwitch(
                     value: _runAtStartup,
                     onChanged: (bool value) async {
                       try {
@@ -340,7 +340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 iconColor: const Color(0xFFFF9500),
                 title: 'Reduce Motion',
                 subtitle: 'Pause heavy animations to save battery & CPU',
-                trailing: CupertinoSwitch(
+                trailing: FusionSwitch(
                   value: themeProvider.reduceMotion,
                   onChanged: (bool value) {
                     themeProvider.setReduceMotion(value);
@@ -371,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   iconColor: const Color(0xFF34C759),
                   title: 'Background Tracking',
                   subtitle: 'Live traffic monitoring in background',
-                  trailing: CupertinoSwitch(
+                  trailing: FusionSwitch(
                     value: _isBackgroundServiceRunning,
                     onChanged: (bool value) async {
                       final service = FlutterBackgroundService();

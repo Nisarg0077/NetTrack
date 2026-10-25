@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +9,8 @@ import '../services/export_service.dart';
 import '../services/settings_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/data_provider.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
+import 'package:fusion_ui/fusion_ui.dart' show FusionSwitch;
 
 enum ExportPeriodOption {
   thisWeek,
@@ -280,29 +281,19 @@ class _ExportDialogState extends State<ExportDialog> {
     final periodInfo = _computePeriod(_selectedOption);
     final String previewLabel = periodInfo['label'] as String;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.88,
-          ),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xE6141722) : const Color(0xF2F2F2F7),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.14)
-                    : Colors.black.withValues(alpha: 0.08),
-                width: 0.85,
-              ),
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: SafeArea(
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
+      ),
+      child: fusion.GlassSurface(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        blur: 24,
+        elevation: 4,
+        useBackdropFilter: true,
+        padding: EdgeInsets.zero,
+        child: Material(
+          color: Colors.transparent,
+          child: SafeArea(
               child: Column(
                 children: [
                   // Handle bar
@@ -538,7 +529,7 @@ class _ExportDialogState extends State<ExportDialog> {
                               subtitle: const Text(
                                   'Prompt for save directory on export',
                                   style: TextStyle(fontSize: 12)),
-                              trailing: CupertinoSwitch(
+                              trailing: FusionSwitch(
                                 value: _chooseSaveLocation,
                                 onChanged: (val) =>
                                     setState(() => _chooseSaveLocation = val),
@@ -604,8 +595,7 @@ class _ExportDialogState extends State<ExportDialog> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget? _buildOptionSubtitle(ExportPeriodOption option) {

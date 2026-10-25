@@ -11,6 +11,7 @@ import 'services/desktop_startup_service.dart';
 import 'services/background_service.dart';
 import 'services/system_tray_service.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:fusion_ui/fusion_ui.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,6 +74,28 @@ class NetTrackApp extends StatelessWidget {
       builder: (context, themeProvider, child) {
         final isDark = themeProvider.isDarkMode;
 
+        final effectQuality = switch (themeProvider.performanceMode) {
+          'ultra' => FusionEffectQuality.high,
+          'efficiency' || 'battery_saver' => FusionEffectQuality.minimal,
+          _ => FusionEffectQuality.balanced,
+        };
+
+        final fusionLight = FusionThemeData.light(
+          primary: const Color(0xFF007AFF),
+          accent: const Color(0xFF5856D6),
+          effectQuality: effectQuality,
+          reducedMotion: themeProvider.reduceMotion,
+        );
+
+        final fusionDark = FusionThemeData.dark(
+          primary: const Color(0xFF0A84FF),
+          accent: const Color(0xFF5E5CE6),
+          effectQuality: effectQuality,
+          reducedMotion: themeProvider.reduceMotion,
+        );
+
+        final currentFusionTheme = isDark ? fusionDark : fusionLight;
+
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -91,6 +114,7 @@ class NetTrackApp extends StatelessWidget {
             themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
             theme: ThemeData(
               useMaterial3: true,
+              extensions: [fusionLight],
               brightness: Brightness.light,
               colorScheme: const ColorScheme.light(
                 primary: Color(0xFF007AFF), // Apple System Blue
@@ -179,6 +203,7 @@ class NetTrackApp extends StatelessWidget {
             ),
             darkTheme: ThemeData(
               useMaterial3: true,
+              extensions: [fusionDark],
               brightness: Brightness.dark,
               colorScheme: const ColorScheme.dark(
                 primary: Color(0xFF0A84FF), // Apple Dark System Blue
@@ -264,6 +289,12 @@ class NetTrackApp extends StatelessWidget {
                     letterSpacing: -0.1, color: const Color(0xFFD1D1D6)),
               ),
             ),
+            builder: (context, child) {
+              return FusionTheme(
+                data: currentFusionTheme,
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
             home: const AppShell(),
           ),
         );

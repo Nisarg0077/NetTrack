@@ -1,5 +1,5 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
 import '../platform/platform_service.dart';
 
 /// A modern, adaptive Liquid Glass toolbar.
@@ -112,23 +112,23 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
 
     // Desktop presentation: full-width translucent macOS top bar
     if (isDesktop) {
-      Widget desktopBar = ClipRect(
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xCC0E1119) : const Color(0xE6F8F9FC),
-              border: Border(
-                bottom: BorderSide(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.black.withValues(alpha: 0.06),
-                  width: 0.85,
-                ),
+      Widget desktopBar = fusion.GlassSurface(
+        borderRadius: BorderRadius.zero,
+        blur: 20,
+        elevation: 0,
+        useBackdropFilter: true,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.06),
+                width: 0.85,
               ),
             ),
-            child: fullContent,
           ),
+          child: fullContent,
         ),
       );
       return useSafeArea
@@ -139,42 +139,15 @@ class GlassToolbar extends StatelessWidget implements PreferredSizeWidget {
     // Mobile presentation: Floating stadium capsule
     final r = BorderRadius.circular(28);
 
-    Widget floatingBar = Container(
-      margin: margin ?? const EdgeInsets.fromLTRB(14, 6, 14, 8),
-      decoration: BoxDecoration(
+    Widget floatingBar = Padding(
+      padding: margin ?? const EdgeInsets.fromLTRB(14, 6, 14, 8),
+      child: fusion.GlassSurface(
         borderRadius: r,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.38 : 0.07),
-            blurRadius: 18,
-            spreadRadius: -2,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: r,
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: r,
-              color: isDark ? const Color(0xD9141722) : const Color(0xEBFFFFFF),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.14)
-                    : Colors.black.withValues(alpha: 0.08),
-                width: 0.85,
-              ),
-            ),
-            child: fullContent,
-          ),
-        ),
+        elevation: 2,
+        blur: 24,
+        useBackdropFilter: true,
+        padding: EdgeInsets.zero,
+        child: fullContent,
       ),
     );
 

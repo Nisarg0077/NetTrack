@@ -63,6 +63,8 @@ dependencies:
   network_usage_monitor: ^0.0.1
   native_traffic:
     path: packages/native_traffic
+  fusion_ui:
+    path: ../flutter_ui_framwork
   liquid_glass_easy: ^4.3.1
 dev_dependencies:
   flutter_test:

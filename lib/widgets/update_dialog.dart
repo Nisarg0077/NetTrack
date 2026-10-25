@@ -1,7 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
 class UpdateDialog extends StatelessWidget {
   final String latestVersion;
@@ -36,35 +36,15 @@ class UpdateDialog extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: ClipRRect(
+            child: fusion.GlassSurface(
               borderRadius: BorderRadius.circular(26),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(22, 26, 22, 20),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xE61C1C1E)
-                        : const Color(0xF2FFFFFF),
-                    borderRadius: BorderRadius.circular(26),
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0x2EFFFFFF)
-                          : const Color(0x24000000),
-                      width: 0.8,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                            .withValues(alpha: isDark ? 0.45 : 0.14),
-                        blurRadius: 32,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+              blur: 30,
+              elevation: 4,
+              useBackdropFilter: true,
+              padding: const EdgeInsets.fromLTRB(22, 26, 22, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                       // Shimmering Icon Badge
                       Container(
                         width: 56,
@@ -241,8 +221,6 @@ class UpdateDialog extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 }

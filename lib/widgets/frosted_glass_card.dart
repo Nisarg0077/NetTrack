@@ -1,9 +1,8 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
-/// An authentic Apple-grade Frosted Glass Card with optical backdrop blur,
-/// specular hairline highlights, soft layered depth shadows, and interactive spring feedback.
-class FrostedGlassCard extends StatefulWidget {
+/// An authentic Apple-grade Frosted Glass Card powered by Fusion UI.
+class FrostedGlassCard extends StatelessWidget {
   final Widget child;
   final double borderRadius;
   final EdgeInsetsGeometry padding;
@@ -36,106 +35,37 @@ class FrostedGlassCard extends StatefulWidget {
   });
 
   @override
-  State<FrostedGlassCard> createState() => _FrostedGlassCardState();
-}
-
-class _FrostedGlassCardState extends State<FrostedGlassCard> {
-  bool _isHovered = false;
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final r = BorderRadius.circular(widget.borderRadius);
+    final r = BorderRadius.circular(borderRadius);
 
-    final Color tint =
-        widget.color ?? (isDark ? const Color(0xFF141722) : Colors.white);
-
-    // Apple Specular Edge Rim (Crisp hairline reflection)
-    final effectiveBorder = widget.border ??
-        Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: _isHovered ? 0.18 : 0.10)
-              : Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.06),
-          width: 0.85,
-        );
-
-    // Apple Layered Depth Ambient Shadows
-    final effectiveShadows = widget.boxShadow ??
-        [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.38 : 0.05),
-            blurRadius: _isHovered ? 28 : 18,
-            spreadRadius: -2,
-            offset: Offset(0, _isHovered ? 10 : 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ];
-
-    Widget content = Container(
-      width: widget.width,
-      height: widget.height,
-      decoration: BoxDecoration(
+    if (interactive || onTap != null) {
+      return fusion.GlassCard(
+        width: width,
+        height: height,
+        padding: padding,
+        margin: EdgeInsets.zero,
         borderRadius: r,
-        boxShadow: effectiveShadows,
-      ),
-      child: ClipRRect(
-        borderRadius: r,
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: widget.blur, sigmaY: widget.blur),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: r,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [
-                        tint.withValues(alpha: 0.65),
-                        tint.withValues(alpha: 0.50),
-                      ]
-                    : [
-                        tint.withValues(alpha: 0.85),
-                        tint.withValues(alpha: 0.72),
-                      ],
-              ),
-              border: effectiveBorder,
-            ),
-            child: Padding(
-              padding: widget.padding,
-              child: widget.child,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (widget.interactive || widget.onTap != null) {
-      content = MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        cursor:
-            widget.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => _isPressed = true),
-          onTapUp: (_) => setState(() => _isPressed = false),
-          onTapCancel: () => setState(() => _isPressed = false),
-          onTap: widget.onTap,
-          child: AnimatedScale(
-            scale: _isPressed ? 0.985 : (_isHovered ? 1.008 : 1.0),
-            duration: const Duration(milliseconds: 160),
-            curve: Curves.easeOutCubic,
-            child: content,
-          ),
-        ),
+        blur: blur,
+        tint: color,
+        interactive: interactive,
+        onTap: onTap,
+        useBackdropFilter: true,
+        showHighlight: true,
+        child: child,
       );
     }
 
-    return content;
+    return fusion.GlassSurface(
+      width: width,
+      height: height,
+      padding: padding,
+      borderRadius: r,
+      blur: blur,
+      tint: color,
+      useBackdropFilter: true,
+      showHighlight: true,
+      child: child,
+    );
   }
 }
+

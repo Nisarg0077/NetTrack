@@ -1,6 +1,6 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fusion_ui/fusion_ui.dart' as fusion;
 
 /// A tab item descriptor for [GlassNavigationBar].
 class GlassNavigationItem {
@@ -42,59 +42,27 @@ class GlassNavigationBar extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
-        child: Container(
+        child: fusion.GlassSurface(
           height: 62,
-          decoration: BoxDecoration(
-            borderRadius: r,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
-                blurRadius: 22,
-                spreadRadius: -2,
-                offset: const Offset(0, 8),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: r,
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-                decoration: BoxDecoration(
-                  borderRadius: r,
-                  color: isDark
-                      ? const Color(0xE0121520)
-                      : const Color(0xEBFFFFFF),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.14)
-                        : Colors.black.withValues(alpha: 0.07),
-                    width: 0.85,
+          borderRadius: r,
+          elevation: 3,
+          blur: blur,
+          useBackdropFilter: true,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          child: Row(
+            children: [
+              for (int i = 0; i < items.length; i++)
+                Expanded(
+                  child: _buildItem(
+                    context,
+                    index: i,
+                    item: items[i],
+                    isSelected: currentIndex == i,
+                    isDark: isDark,
+                    primaryColor: primaryColor,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    for (int i = 0; i < items.length; i++)
-                      Expanded(
-                        child: _buildItem(
-                          context,
-                          index: i,
-                          item: items[i],
-                          isSelected: currentIndex == i,
-                          isDark: isDark,
-                          primaryColor: primaryColor,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            ],
           ),
         ),
       ),
